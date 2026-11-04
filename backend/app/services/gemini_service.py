@@ -17,10 +17,13 @@ logger = logging.getLogger(__name__)
 # Fallback models in priority order
 FALLBACK_MODELS = [
     GEMINI_MODEL,
-    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
     "gemini-3.8-flash",
-    "gemini-3.5-flash-lite"
+    "gemini-3.5-flash"
 ]
+
+# Track quota-exhausted models during this session so requests don't waste time on them
+_exhausted_models = set()
 
 def extract_text_safely(response: Any) -> Optional[str]:
     """Extracts text content cleanly from Gemini response, avoiding thought parts."""
@@ -32,7 +35,6 @@ def extract_text_safely(response: Any) -> Optional[str]:
     except Exception:
         pass
 
-    # Alternative candidate extraction
     try:
         if hasattr(response, "candidates") and response.candidates:
             first_candidate = response.candidates[0]
@@ -62,7 +64,7 @@ class GeminiService:
 
     def generate_json(self, prompt: str) -> Optional[Dict[str, Any]]:
         """
-        Calls AI model to generate structured JSON output with low latency.
+        Calls AI model to generate structured JSON output.
         Returns parsed dict or None on failure.
         """
         if not self.is_available():
@@ -72,15 +74,15 @@ class GeminiService:
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        unique_models = list(dict.fromkeys(FALLBACK_MODELS))
+        unique_models = [m for m in dict.fromkeys(FALLBACK_MODELS) if m not in _exhausted_models]
         for model in unique_models:
-            # Models that support thinking_budget=0
+            # 1. Ultra-fast config with budget=0 if supported
             supports_budget = "flash-lite" not in model
             if supports_budget:
                 try:
                     config = types.GenerateContentConfig(
                         temperature=0.1,
-                        max_output_tokens=350,
+                        max_output_tokens=300,
                         response_mime_type="application/json",
                         thinking_config=types.ThinkingConfig(thinking_budget=0)
                     )
@@ -98,13 +100,18 @@ class GeminiService:
                         self._cache[cache_key] = parsed
                         return parsed
                 except Exception as e:
+                    err_str = str(e)
+                    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                        _exhausted_models.add(model)
+                        logger.info(f"Model {model} hit quota limit, switching to fallback...")
+                        continue
                     logger.debug(f"Budget=0 JSON config failed on {model}: {e}")
 
-            # Standard config without thinking_budget
+            # 2. Standard config
             try:
                 config = types.GenerateContentConfig(
                     temperature=0.1,
-                    max_output_tokens=350,
+                    max_output_tokens=300,
                     response_mime_type="application/json"
                 )
                 response = self.client.models.generate_content(
@@ -121,14 +128,19 @@ class GeminiService:
                     self._cache[cache_key] = parsed
                     return parsed
             except Exception as e:
-                logger.warning(f"AI generate_json failed with model {model}: {e}")
+                err_str = str(e)
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    _exhausted_models.add(model)
+                    logger.info(f"Model {model} hit quota limit, switching to fallback...")
+                else:
+                    logger.warning(f"AI generate_json failed with model {model}: {e}")
                 continue
 
         return None
 
     def generate_text(self, prompt: str, max_tokens: int = 350) -> Optional[str]:
         """
-        Calls AI model to generate free-form text with low latency.
+        Calls AI model to generate free-form text.
         Returns generated string or None on failure.
         """
         if not self.is_available():
@@ -138,7 +150,7 @@ class GeminiService:
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        unique_models = list(dict.fromkeys(FALLBACK_MODELS))
+        unique_models = [m for m in dict.fromkeys(FALLBACK_MODELS) if m not in _exhausted_models]
         for model in unique_models:
             supports_budget = "flash-lite" not in model
             if supports_budget:
@@ -158,6 +170,11 @@ class GeminiService:
                         self._cache[cache_key] = raw_text
                         return raw_text
                 except Exception as e:
+                    err_str = str(e)
+                    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                        _exhausted_models.add(model)
+                        logger.info(f"Model {model} hit quota limit, switching to fallback...")
+                        continue
                     logger.debug(f"Budget=0 text config failed on {model}: {e}")
 
             try:
@@ -175,7 +192,12 @@ class GeminiService:
                     self._cache[cache_key] = raw_text
                     return raw_text
             except Exception as e:
-                logger.warning(f"AI generate_text failed with model {model}: {e}")
+                err_str = str(e)
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    _exhausted_models.add(model)
+                    logger.info(f"Model {model} hit quota limit, switching to fallback...")
+                else:
+                    logger.warning(f"AI generate_text failed with model {model}: {e}")
                 continue
 
         return None
