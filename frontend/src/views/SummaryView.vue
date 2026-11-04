@@ -8,53 +8,54 @@
       </div>
       <button
         type="button"
-        class="btn-refresh"
+        class="btn-secondary"
         :disabled="loadingSummary"
         @click="fetchSummary"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
           <path d="M21 3v5h-5"/>
           <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
           <path d="M8 16H3v5"/>
         </svg>
-        <span>{{ loadingSummary ? 'Compiling Report...' : 'Refresh Summary' }}</span>
+        <span>{{ loadingSummary ? 'Compiling Report...' : 'Refresh Report' }}</span>
       </button>
     </div>
 
-    <!-- Metric Stat Cards -->
+    <!-- 4 Key Metric Cards -->
     <div class="metrics-grid">
-      <div class="metric-card">
+      <div class="metric-card card-box">
         <span class="metric-label">Total Enquiries</span>
         <span class="metric-value">{{ stats.total_enquiries || 0 }}</span>
         <span class="metric-hint">Across all 4 channels</span>
       </div>
 
-      <div class="metric-card alert">
-        <span class="metric-label">Overdue Follow-ups (>48h)</span>
+      <div class="metric-card card-box alert">
+        <span class="metric-label">Overdue Leads (>48h)</span>
         <span class="metric-value text-red">{{ overdueList.length }}</span>
-        <span class="metric-hint">Sales leads awaiting response</span>
+        <span class="metric-hint">Awaiting response follow-up</span>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-card card-box">
         <span class="metric-label">Top Demand Track</span>
         <span class="metric-value capitalize">{{ topTrack }}</span>
         <span class="metric-hint">Highest enquiry volume</span>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-card card-box">
         <span class="metric-label">Primary Channel</span>
         <span class="metric-value capitalize">{{ topChannel }}</span>
         <span class="metric-hint">Most active lead source</span>
       </div>
     </div>
 
+    <!-- Two-Column Layout -->
     <div class="summary-columns">
       <!-- Left Column: AI Executive Summary -->
-      <div class="ai-report-card">
+      <div class="ai-report-card card-box">
         <div class="report-header">
           <div class="report-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
             </svg>
           </div>
@@ -75,10 +76,10 @@
       </div>
 
       <!-- Right Column: 48-Hour Overdue Follow-up List -->
-      <div class="overdue-list-card">
+      <div class="overdue-list-card card-box">
         <div class="overdue-header">
           <div class="overdue-title-group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="text-danger">
               <circle cx="12" cy="12" r="10"/>
               <line x1="12" y1="8" x2="12" y2="12"/>
               <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -104,12 +105,12 @@
               </span>
             </div>
 
-            <p class="item-msg">{{ item.message }}</p>
+            <p class="item-msg">"{{ item.message }}"</p>
 
             <div class="item-footer">
               <span class="age-text">Received {{ formatTimeAgo(item.created_at) }}</span>
               <div class="action-dropdown">
-                <label class="dropdown-label">Update Status:</label>
+                <label class="dropdown-label">Update:</label>
                 <StatusSelect
                   :model-value="item.status"
                   @change="handleStatusChange(item.id, $event)"
@@ -168,7 +169,7 @@ const topTrack = computed(() => {
   return top !== 'N/A' ? top : 'Bootcamp'
 })
 
-// Simple Markdown converter for clean HTML rendering
+// Markdown converter for clean HTML rendering
 const formattedSummary = computed(() => {
   if (!rawSummaryText.value) return ''
   return rawSummaryText.value
@@ -222,31 +223,14 @@ onMounted(() => {
 
 .view-title {
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-main);
+  letter-spacing: -0.02em;
 }
 
 .view-subtitle {
   font-size: 0.85rem;
   color: var(--text-muted);
-}
-
-.btn-refresh {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 1.15rem;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-main);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-refresh:hover {
-  background-color: var(--bg-surface-elevated);
 }
 
 .metrics-grid {
@@ -256,11 +240,7 @@ onMounted(() => {
 }
 
 .metric-card {
-  background: var(--bg-surface);
   padding: 1.25rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -268,20 +248,20 @@ onMounted(() => {
 
 .metric-card.alert {
   border-left: 4px solid var(--danger);
-  background-color: var(--danger-light);
+  background-color: var(--danger-bg);
 }
 
 .metric-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.775rem;
+  font-weight: 800;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .metric-value {
-  font-size: 1.85rem;
-  font-weight: 800;
+  font-size: 2rem;
+  font-weight: 900;
   color: var(--text-main);
   line-height: 1.2;
 }
@@ -311,14 +291,6 @@ onMounted(() => {
   }
 }
 
-.ai-report-card, .overdue-list-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-
 .report-header, .overdue-header {
   display: flex;
   align-items: center;
@@ -346,7 +318,7 @@ onMounted(() => {
 
 .report-title {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-main);
 }
 
@@ -362,16 +334,17 @@ onMounted(() => {
 }
 
 .overdue-badge-pill {
-  background: var(--danger-light);
+  background: var(--danger-bg);
   color: var(--danger);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.725rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 .report-content {
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--text-main);
   font-size: 0.9rem;
 }
@@ -384,7 +357,7 @@ onMounted(() => {
 
 .markdown-body :deep(li) {
   margin-left: 1.25rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .loading-state {
@@ -414,7 +387,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  max-height: 600px;
+  max-height: 550px;
   overflow-y: auto;
 }
 
@@ -422,7 +395,7 @@ onMounted(() => {
   border: 1px solid var(--border-color);
   background: var(--bg-surface-elevated);
   border-radius: var(--radius-md);
-  padding: 0.85rem;
+  padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -453,6 +426,7 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-style: italic;
 }
 
 .item-footer {
@@ -465,8 +439,8 @@ onMounted(() => {
 
 .age-text {
   font-size: 0.75rem;
-  color: var(--warning);
-  font-weight: 600;
+  color: var(--danger);
+  font-weight: 700;
 }
 
 .action-dropdown {
@@ -492,7 +466,7 @@ onMounted(() => {
 
 .empty-overdue h4 {
   color: var(--success);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .text-danger {

@@ -1,9 +1,9 @@
 <template>
   <div class="pipeline-view">
-    <!-- Top toolbar: Filters, Search, and Stats -->
-    <div class="pipeline-toolbar">
+    <!-- Top toolbar: Filters, Search, and Action CTA -->
+    <div class="pipeline-toolbar card-box">
       <div class="filter-group">
-        <label class="filter-label">Filter Channel:</label>
+        <span class="filter-label">Filter Channel:</span>
         <div class="channel-pills">
           <button
             v-for="ch in channels"
@@ -27,7 +27,7 @@
           <input
             v-model="store.searchQuery"
             type="text"
-            placeholder="Search leads, phone, text..."
+            placeholder="Search leads, phone, query..."
             class="search-input"
           />
           <button
@@ -45,7 +45,7 @@
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          New Enquiry
+          New Lead
         </RouterLink>
       </div>
     </div>
@@ -53,17 +53,19 @@
     <!-- Overdue Alert Banner if overdue enquiries exist -->
     <div v-if="store.overdueCount > 0" class="overdue-alert-banner">
       <div class="banner-left">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
+        <div class="alert-icon-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
         <span>
-          <strong>Follow-up Alert:</strong> {{ store.overdueCount }} active sales leads have had no contact for 48+ hours.
+          <strong>Follow-up Alert:</strong> {{ store.overdueCount }} active leads have had no contact for over 48 hours.
         </span>
       </div>
       <RouterLink to="/summary" class="banner-link">
-        Review Overdue Leads &rarr;
+        Resolve Now &rarr;
       </RouterLink>
     </div>
 
@@ -77,7 +79,7 @@
       />
     </div>
 
-    <!-- Detail Slide-over Modal -->
+    <!-- Slide-over Detail Modal -->
     <DetailModal
       v-if="store.activeModalEnquiry"
       :enquiry="store.activeModalEnquiry"
@@ -98,7 +100,7 @@ const store = useEnquiriesStore()
 const columns = ['New', 'Contacted', 'Interested', 'Paid', 'Lost']
 
 const channels = [
-  { label: 'All Channels', value: 'all' },
+  { label: 'All', value: 'all' },
   { label: 'WhatsApp', value: 'whatsapp' },
   { label: 'Facebook', value: 'facebook' },
   { label: 'Website', value: 'website' },
@@ -125,11 +127,7 @@ onMounted(() => {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  background: var(--bg-surface);
-  padding: 0.85rem 1.25rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  padding: 1rem 1.25rem;
 }
 
 .filter-group {
@@ -140,7 +138,7 @@ onMounted(() => {
 
 .filter-label {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
@@ -150,29 +148,32 @@ onMounted(() => {
 }
 
 .pill-btn {
-  padding: 0.35rem 0.75rem;
-  border-radius: 9999px;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
   transition: all 0.15s ease;
 }
 
 .pill-btn:hover {
   color: var(--text-main);
-  background-color: var(--border-color);
+  border-color: var(--primary);
 }
 
 .pill-btn.active {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px var(--primary-glow);
 }
 
 .search-and-cta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .search-input-wrapper {
@@ -183,64 +184,76 @@ onMounted(() => {
 
 .search-icon {
   position: absolute;
-  left: 0.75rem;
+  left: 0.85rem;
   color: var(--text-muted);
 }
 
 .search-input {
-  padding: 0.5rem 2rem 0.5rem 2.25rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
+  padding: 0.55rem 2rem 0.55rem 2.35rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input-border);
   font-size: 0.85rem;
   width: 240px;
   outline: none;
   background-color: var(--input-bg);
-  color: var(--text-main);
-  transition: all 0.15s;
+  color: var(--input-text);
+  transition: all 0.2s;
 }
 
 .search-input:focus {
   border-color: var(--primary);
   width: 280px;
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .clear-search {
   position: absolute;
-  right: 0.6rem;
-  font-size: 1.1rem;
+  right: 0.65rem;
+  font-size: 1.15rem;
   color: var(--text-muted);
   line-height: 1;
 }
 
 .overdue-alert-banner {
-  background-color: var(--danger-light);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: var(--danger-bg);
+  border: 1px solid rgba(239, 68, 68, 0.4);
   color: var(--danger);
-  padding: 0.75rem 1.25rem;
+  padding: 0.85rem 1.25rem;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.875rem;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.alert-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .banner-left {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
 .banner-link {
   color: var(--danger);
-  font-weight: 700;
+  font-weight: 800;
   text-decoration: underline;
 }
 
 .pipeline-board {
   display: flex;
-  gap: 1.15rem;
+  gap: 1.25rem;
   overflow-x: auto;
-  padding-bottom: 1rem;
+  padding-bottom: 1.25rem;
   flex: 1;
 }
 </style>

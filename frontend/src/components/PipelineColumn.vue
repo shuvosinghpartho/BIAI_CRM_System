@@ -17,6 +17,10 @@
         />
       </template>
       <div v-else class="empty-column-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
         <p>No enquiries in {{ status }}</p>
       </div>
     </div>
@@ -41,14 +45,15 @@ defineProps({
 <style scoped>
 .pipeline-column {
   flex: 1;
-  min-width: 280px;
-  max-width: 340px;
+  min-width: 290px;
+  max-width: 350px;
   background-color: var(--column-bg);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 170px);
   border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
 }
 
 .column-header {
@@ -65,7 +70,7 @@ defineProps({
 .col-title-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .status-indicator {
@@ -74,25 +79,26 @@ defineProps({
   border-radius: 50%;
 }
 
-.col-new .status-indicator { background-color: #3b82f6; }
-.col-contacted .status-indicator { background-color: #f59e0b; }
-.col-interested .status-indicator { background-color: #8b5cf6; }
-.col-paid .status-indicator { background-color: #10b981; }
-.col-lost .status-indicator { background-color: #94a3b8; }
+.col-new .status-indicator { background-color: var(--status-new); box-shadow: 0 0 8px var(--status-new); }
+.col-contacted .status-indicator { background-color: var(--status-contacted); box-shadow: 0 0 8px var(--status-contacted); }
+.col-interested .status-indicator { background-color: var(--status-interested); box-shadow: 0 0 8px var(--status-interested); }
+.col-paid .status-indicator { background-color: var(--status-paid); box-shadow: 0 0 8px var(--status-paid); }
+.col-lost .status-indicator { background-color: var(--status-lost); }
 
 .status-title {
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 
 .count-badge {
   background-color: var(--bg-surface-elevated);
   color: var(--text-muted);
-  font-size: 0.775rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   padding: 0.15rem 0.55rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-color);
 }
 
@@ -106,12 +112,16 @@ defineProps({
 }
 
 .empty-column-state {
-  padding: 2.5rem 1rem;
+  padding: 3rem 1rem;
   text-align: center;
-  color: var(--text-muted);
-  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-size: 0.825rem;
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-md);
   margin: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>
