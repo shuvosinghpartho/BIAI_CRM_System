@@ -1,7 +1,10 @@
 
-  VITE v5.4.21  ready in 127 ms
+  VITE v5.4.21  ready in 128 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: http://192.168.0.100:5173/
-12:17:33 AM [vite] page reload src/utils/dynamicFavicon.js
-12:20:56 AM [vite] hmr update /src/views/SummaryView.vue, /src/views/SummaryView.vue?vue&type=style&index=0&scoped=cfa7e0d1&lang.css
+12:26:16 AM [vite] hmr update /src/views/SummaryView.vue, /src/views/SummaryView.vue?vue&type=style&index=0&scoped=cfa7e0d1&lang.css
+12:26:36 AM [vite] hmr update /src/components/QuickAddModal.vue
+12:26:43 AM [vite] hmr update /src/components/QuickAddModal.vue?vue&type=style&index=0&scoped=62b946e2&lang.css
+12:26:48 AM [vite] hmr update /src/views/AddEnquiryView.vue
+12:26:56 AM [vite] hmr update /src/views/AddEnquiryView.vue?vue&type=style&index=0&scoped=f223dc69&lang.css

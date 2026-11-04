@@ -16,6 +16,7 @@
         </div>
 
         <div class="paste-form">
+          <div v-if="extracting" class="extract-scanner-line"></div>
           <div class="channel-select-bar">
             <span class="bar-label">Source Channel:</span>
             <div class="channel-chips">
@@ -244,9 +245,29 @@ async function handleSave(formData) {
 }
 
 .paste-form {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.extract-scanner-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary) 50%, transparent);
+  box-shadow: 0 0 12px var(--primary), 0 0 22px var(--primary);
+  z-index: 10;
+  animation: paste-scan 1.6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes paste-scan {
+  0% { top: 0%; opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { top: 90%; opacity: 0.3; }
 }
 
 .channel-select-bar {

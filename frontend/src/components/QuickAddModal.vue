@@ -38,6 +38,7 @@
           </div>
 
           <div class="message-input-group">
+            <div v-if="analyzing" class="modal-scanner-line"></div>
             <textarea
               v-model="rawMessage"
               rows="3"
@@ -392,9 +393,29 @@ async function handleSave() {
 }
 
 .message-input-group {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+}
+
+.modal-scanner-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary) 50%, transparent);
+  box-shadow: 0 0 10px var(--primary), 0 0 18px var(--primary);
+  z-index: 10;
+  animation: modal-scan 1.4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes modal-scan {
+  0% { top: 0%; opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { top: 85%; opacity: 0.3; }
 }
 
 .quick-textarea {

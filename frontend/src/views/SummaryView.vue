@@ -151,18 +151,60 @@
           </div>
         </div>
 
-        <!-- Loading State Skeleton -->
-        <div v-if="loadingSummary" class="loading-state">
-          <div class="spinner-large"></div>
-          <div class="loading-pulse-text">
-            <h4>Synthesizing Executive Performance Insights</h4>
-            <p>Aggregating conversion rates, channel volume, and lead response SLA...</p>
+        <!-- High-Tech AI Loading Animation State -->
+        <div v-if="loadingSummary" class="ai-loading-container">
+          <!-- Central Neural AI Orb with Spinning Gyroscope Rings -->
+          <div class="neural-core-wrapper">
+            <div class="orbit-ring ring-1"></div>
+            <div class="orbit-ring ring-2"></div>
+            <div class="orbit-ring ring-3"></div>
+            <div class="ai-spark-orb">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+              </svg>
+            </div>
+            <div class="sonar-wave wave-1"></div>
+            <div class="sonar-wave wave-2"></div>
           </div>
-          <div class="shimmer-lines">
-            <div class="skeleton-line full skeleton-pulse"></div>
-            <div class="skeleton-line md skeleton-pulse"></div>
-            <div class="skeleton-line full skeleton-pulse"></div>
-            <div class="skeleton-line sm skeleton-pulse"></div>
+
+          <!-- Live Dynamic Step Tracker & Cyber Progress Bar -->
+          <div class="ai-status-display">
+            <div class="status-stage-pill">
+              <span class="pulse-spark"></span>
+              STAGE {{ loadingStepIndex + 1 }} OF {{ loadingSteps.length }}
+            </div>
+            <h4 class="current-step-title">{{ loadingSteps[loadingStepIndex].title }}</h4>
+            <p class="current-step-desc">{{ loadingSteps[loadingStepIndex].desc }}</p>
+
+            <!-- Glowing Animated Progress Bar -->
+            <div class="cyber-progress-track">
+              <div
+                class="cyber-progress-fill"
+                :style="{ width: ((loadingStepIndex + 1) * 25) + '%' }"
+              >
+                <div class="progress-light-sweep"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wireframe Mockup Preview with Holographic Scanning Laser -->
+          <div class="wireframe-mockup-wrapper">
+            <div class="laser-scanner-beam"></div>
+            
+            <div class="wireframe-section">
+              <div class="wireframe-line sm skeleton-pulse"></div>
+              <div class="wireframe-line full skeleton-pulse"></div>
+              <div class="wireframe-line md skeleton-pulse"></div>
+            </div>
+
+            <div class="wireframe-card-row">
+              <div v-for="n in 3" :key="n" class="wireframe-mini-card skeleton-pulse"></div>
+            </div>
+
+            <div class="wireframe-section">
+              <div class="wireframe-line full skeleton-pulse"></div>
+              <div class="wireframe-line lg skeleton-pulse"></div>
+            </div>
           </div>
         </div>
 
@@ -233,7 +275,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useEnquiriesStore } from '../stores/enquiries'
 import StatusSelect from '../components/StatusSelect.vue'
 import api from '../api/client'
@@ -246,6 +288,30 @@ const rawSummaryText = ref('')
 const generatedAt = ref('')
 const stats = ref({})
 const isReportCopied = ref(false)
+
+const loadingStepIndex = ref(0)
+const loadingSteps = [
+  { title: "Aggregating 4-Channel Enquiries", desc: "Parsing incoming WhatsApp, Facebook, Website, and Call data..." },
+  { title: "Evaluating 48-Hour SLAs", desc: "Auditing response times and flagging unresolved prospect bottlenecks..." },
+  { title: "Synthesizing Strategic Intelligence", desc: "Formulating conversion analysis and high-impact revenue recommendations..." },
+  { title: "Compiling Leadership Brief", desc: "Structuring executive briefing and finalized action steps..." }
+]
+let stepTimer = null
+
+function startStepTimer() {
+  loadingStepIndex.value = 0
+  if (stepTimer) clearInterval(stepTimer)
+  stepTimer = setInterval(() => {
+    loadingStepIndex.value = (loadingStepIndex.value + 1) % loadingSteps.length
+  }, 1100)
+}
+
+function stopStepTimer() {
+  if (stepTimer) {
+    clearInterval(stepTimer)
+    stepTimer = null
+  }
+}
 
 const overdueList = computed(() => store.overdueList)
 
@@ -324,7 +390,6 @@ const formattedSummary = computed(() => {
 
   // Format bullet items (* or -) into styled rows with indicator dots
   text = text.replace(/^[\*\-]\s+(.*$)/gm, (match, item) => {
-    // Check if sub-item or indented
     return `<div class="bullet-row"><span class="bullet-dot"></span><div class="bullet-text">${item}</div></div>`
   })
 
@@ -352,6 +417,7 @@ function copyFullReport() {
 
 async function fetchSummary(force = false) {
   loadingSummary.value = true
+  startStepTimer()
   try {
     const res = await api.getWeeklySummary(force)
     rawSummaryText.value = res.data.ai_summary
@@ -365,6 +431,7 @@ async function fetchSummary(force = false) {
     store.showToast('Could not load summary: ' + err.message, 'error')
   } finally {
     loadingSummary.value = false
+    stopStepTimer()
   }
 }
 
@@ -380,6 +447,10 @@ async function handleStatusChange(id, newStatus) {
 onMounted(() => {
   fetchSummary(false)
   store.fetchAll()
+})
+
+onUnmounted(() => {
+  stopStepTimer()
 })
 </script>
 
@@ -474,7 +545,7 @@ onMounted(() => {
 }
 
 /* ==========================================================================
-   EXECUTIVE AI REPORT CARD REDESIGN
+   EXECUTIVE AI REPORT CARD
    ========================================================================== */
 .ai-report-card {
   position: relative;
@@ -671,6 +742,252 @@ onMounted(() => {
   width: 1px;
   height: 24px;
   background: var(--border-color);
+}
+
+/* ==========================================================================
+   HIGH-TECH AI LOADING ANIMATION SYSTEM
+   ========================================================================== */
+.ai-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.75rem;
+  gap: 1.75rem;
+  background: radial-gradient(circle at 50% 30%, rgba(225, 29, 72, 0.04) 0%, transparent 70%);
+}
+
+/* Central Neural Orb with Rotating Gyroscope Rings */
+.neural-core-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-spark-orb {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #a855f7);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px var(--primary-glow);
+  z-index: 2;
+  animation: pulse-core 2s ease-in-out infinite;
+}
+
+@keyframes pulse-core {
+  0% { transform: scale(0.96); box-shadow: 0 0 16px var(--primary-glow); }
+  50% { transform: scale(1.06); box-shadow: 0 0 32px rgba(225, 29, 72, 0.6); }
+  100% { transform: scale(0.96); box-shadow: 0 0 16px var(--primary-glow); }
+}
+
+.orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px dashed transparent;
+  pointer-events: none;
+}
+
+.ring-1 {
+  width: 68px;
+  height: 68px;
+  border-top-color: var(--primary);
+  border-left-color: var(--primary);
+  animation: rotate-ring 3s linear infinite;
+}
+
+.ring-2 {
+  width: 82px;
+  height: 82px;
+  border-right-color: #a855f7;
+  border-bottom-color: #a855f7;
+  animation: rotate-ring-rev 2.2s linear infinite;
+}
+
+.ring-3 {
+  width: 98px;
+  height: 98px;
+  border-top-color: #38bdf8;
+  border-bottom-color: #38bdf8;
+  animation: rotate-ring 4.5s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes rotate-ring {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotate-ring-rev {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.sonar-wave {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid var(--primary);
+  pointer-events: none;
+  animation: sonar-ripple 2.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.wave-2 {
+  animation-delay: 1.2s;
+}
+
+@keyframes sonar-ripple {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Status Tracker & Steps */
+.ai-status-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  max-width: 440px;
+  width: 100%;
+}
+
+.status-stage-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  background: rgba(225, 29, 72, 0.1);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(225, 29, 72, 0.25);
+}
+
+.pulse-spark {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 6px var(--primary);
+  animation: pulse-dot-anim 1.5s infinite;
+}
+
+.current-step-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.current-step-desc {
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Glowing Cyber Progress Bar */
+.cyber-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 0.6rem;
+}
+
+.cyber-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e11d48, #a855f7, #38bdf8);
+  border-radius: 9999px;
+  position: relative;
+  transition: width 0.5s ease-out;
+}
+
+.progress-light-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: light-sweep-anim 1.5s infinite;
+}
+
+@keyframes light-sweep-anim {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Wireframe Skeleton with Laser Scanner Beam */
+.wireframe-mockup-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.laser-scanner-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 5%, var(--primary) 50%, transparent 95%);
+  box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+  top: 0;
+  z-index: 5;
+  animation: laser-sweep 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes laser-sweep {
+  0% { top: 0%; opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { top: 100%; opacity: 0.4; }
+}
+
+.wireframe-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wireframe-line {
+  height: 9px;
+  border-radius: 4px;
+}
+
+.wireframe-line.sm { width: 35%; height: 8px; }
+.wireframe-line.md { width: 70%; }
+.wireframe-line.lg { width: 85%; }
+.wireframe-line.full { width: 100%; }
+
+.wireframe-card-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.wireframe-mini-card {
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 
 /* Report Content Body */
@@ -973,46 +1290,6 @@ onMounted(() => {
   font-size: 0.85rem;
   color: var(--text-muted);
   max-width: 320px;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3.5rem 1.5rem;
-  gap: 1rem;
-  text-align: center;
-}
-
-.spinner-large {
-  width: 42px;
-  height: 42px;
-  border: 3px solid var(--border-color);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.loading-pulse-text h4 {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 0.25rem;
-}
-
-.loading-pulse-text p {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-.shimmer-lines {
-  width: 100%;
-  max-width: 450px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 1rem;
 }
 
 @media (max-width: 1024px) {
