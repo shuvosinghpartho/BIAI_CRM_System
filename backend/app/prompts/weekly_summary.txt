@@ -12,3 +12,4 @@ Format with clear markdown headings, bullet points, and concise numbers.
 
 Enquiry Data:
 {enquiries_summary}
+

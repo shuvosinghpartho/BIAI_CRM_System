@@ -3,7 +3,7 @@
     <!-- Top toolbar: Filters, Search, and Stats -->
     <div class="pipeline-toolbar">
       <div class="filter-group">
-        <label class="filter-label">Channel:</label>
+        <label class="filter-label">Filter Channel:</label>
         <div class="channel-pills">
           <button
             v-for="ch in channels"
@@ -59,11 +59,11 @@
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <span>
-          <strong>Attention:</strong> {{ store.overdueCount }} sales enquiries have not received follow-up in over 48 hours.
+          <strong>Follow-up Alert:</strong> {{ store.overdueCount }} active sales leads have had no contact for 48+ hours.
         </span>
       </div>
       <RouterLink to="/summary" class="banner-link">
-        View Overdue Leads &rarr;
+        Review Overdue Leads &rarr;
       </RouterLink>
     </div>
 
@@ -76,6 +76,13 @@
         :enquiries="store.pipelineColumns[status] || []"
       />
     </div>
+
+    <!-- Detail Slide-over Modal -->
+    <DetailModal
+      v-if="store.activeModalEnquiry"
+      :enquiry="store.activeModalEnquiry"
+      @close="store.closeDetailModal"
+    />
   </div>
 </template>
 
@@ -84,6 +91,7 @@ import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useEnquiriesStore } from '../stores/enquiries'
 import PipelineColumn from '../components/PipelineColumn.vue'
+import DetailModal from '../components/DetailModal.vue'
 
 const store = useEnquiriesStore()
 
@@ -117,7 +125,7 @@ onMounted(() => {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  background: #ffffff;
+  background: var(--bg-surface);
   padding: 0.85rem 1.25rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
@@ -146,13 +154,14 @@ onMounted(() => {
   border-radius: 9999px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
-  background-color: #f1f5f9;
+  color: var(--text-muted);
+  background-color: var(--bg-surface-elevated);
   transition: all 0.15s ease;
 }
 
 .pill-btn:hover {
-  background-color: #e2e8f0;
+  color: var(--text-main);
+  background-color: var(--border-color);
 }
 
 .pill-btn.active {
@@ -175,7 +184,7 @@ onMounted(() => {
 .search-icon {
   position: absolute;
   left: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .search-input {
@@ -185,13 +194,13 @@ onMounted(() => {
   font-size: 0.85rem;
   width: 240px;
   outline: none;
-  background-color: #f8fafc;
+  background-color: var(--input-bg);
+  color: var(--text-main);
   transition: all 0.15s;
 }
 
 .search-input:focus {
   border-color: var(--primary);
-  background-color: #fff;
   width: 280px;
 }
 
@@ -199,14 +208,14 @@ onMounted(() => {
   position: absolute;
   right: 0.6rem;
   font-size: 1.1rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   line-height: 1;
 }
 
 .overdue-alert-banner {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  background-color: var(--danger-light);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--danger);
   padding: 0.75rem 1.25rem;
   border-radius: var(--radius-md);
   display: flex;
@@ -222,12 +231,8 @@ onMounted(() => {
 }
 
 .banner-link {
-  color: #b91c1c;
+  color: var(--danger);
   font-weight: 700;
-  text-decoration: none;
-}
-
-.banner-link:hover {
   text-decoration: underline;
 }
 

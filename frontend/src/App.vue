@@ -58,7 +58,7 @@
       <div class="sidebar-footer">
         <div class="ai-status-indicator">
           <span class="pulse-dot"></span>
-          <span>Gemini AI Connected</span>
+          <span>AI Engine Online</span>
         </div>
       </div>
     </aside>
@@ -71,14 +71,41 @@
           <p class="page-description">{{ currentRouteDesc }}</p>
         </div>
 
-        <div class="top-bar-stats">
-          <div class="stat-pill">
-            <span>Sales Leads:</span>
-            <strong>{{ store.salesEnquiries.length }}</strong>
-          </div>
-          <div v-if="overdueCount > 0" class="stat-pill overdue">
-            <span>Overdue:</span>
-            <strong>{{ overdueCount }}</strong>
+        <div class="top-bar-right">
+          <!-- Light / Dark Theme Toggle Button -->
+          <button
+            type="button"
+            class="theme-toggle-btn"
+            :title="store.theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+            @click="store.toggleTheme"
+          >
+            <!-- Sun icon when dark mode -->
+            <svg v-if="store.theme === 'dark'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2"/>
+              <path d="M12 20v2"/>
+              <path d="m4.93 4.93 1.41 1.41"/>
+              <path d="m17.66 17.66 1.41 1.41"/>
+              <path d="M2 12h2"/>
+              <path d="M20 12h2"/>
+              <path d="m6.34 17.66-1.41 1.41"/>
+              <path d="m19.07 4.93-1.41 1.41"/>
+            </svg>
+            <!-- Moon icon when light mode -->
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+          </button>
+
+          <div class="top-bar-stats">
+            <div class="stat-pill">
+              <span>Sales Leads:</span>
+              <strong>{{ store.salesEnquiries.length }}</strong>
+            </div>
+            <div v-if="overdueCount > 0" class="stat-pill overdue">
+              <span>Overdue:</span>
+              <strong>{{ overdueCount }}</strong>
+            </div>
           </div>
         </div>
       </header>
@@ -86,6 +113,19 @@
       <main class="page-body">
         <RouterView />
       </main>
+    </div>
+
+    <!-- Floating Global Toasts -->
+    <div class="toast-container">
+      <div
+        v-for="t in store.toasts"
+        :key="t.id"
+        class="toast"
+        :class="`toast-${t.type}`"
+        @click="store.removeToast(t.id)"
+      >
+        <span>{{ t.message }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -122,6 +162,7 @@ const currentRouteDesc = computed(() => {
 })
 
 onMounted(() => {
+  store.initTheme()
   store.fetchAll()
 })
 </script>
@@ -129,7 +170,7 @@ onMounted(() => {
 <style scoped>
 .sidebar-footer {
   padding: 1.25rem;
-  border-top: 1px solid #1e293b;
+  border-top: 1px solid var(--border-color);
   font-size: 0.775rem;
 }
 
@@ -148,6 +189,12 @@ onMounted(() => {
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .top-bar-stats {
   display: flex;
   align-items: center;
@@ -158,24 +205,26 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background-color: #f1f5f9;
+  background-color: var(--bg-surface-elevated);
   padding: 0.35rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
 }
 
 .stat-pill strong {
-  color: #0f172a;
+  color: var(--text-main);
 }
 
 .stat-pill.overdue {
-  background-color: #fee2e2;
-  color: #b91c1c;
+  background-color: var(--danger-light);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .stat-pill.overdue strong {
-  color: #991b1b;
+  color: var(--danger);
 }
 
 .page-body {

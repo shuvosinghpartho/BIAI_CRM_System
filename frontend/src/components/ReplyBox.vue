@@ -2,10 +2,10 @@
   <div class="reply-box-card">
     <div class="reply-box-header">
       <div class="header-left">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
           <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
         </svg>
-        <span class="title">AI Suggested Reply</span>
+        <span class="title">Suggested Response</span>
         <span v-if="language" class="lang-pill">{{ language.toUpperCase() }}</span>
       </div>
       <div class="header-actions">
@@ -30,7 +30,7 @@
 
     <div v-if="loading" class="reply-loading">
       <div class="spinner"></div>
-      <span>Crafting tailored reply with Gemini AI...</span>
+      <span>Drafting tailored AI response...</span>
     </div>
 
     <div v-else-if="replyText" class="reply-body">
@@ -38,18 +38,19 @@
         v-model="editableReply"
         rows="4"
         class="reply-textarea"
-        placeholder="Edit reply if needed before copying..."
+        placeholder="Edit response if needed before copying..."
       ></textarea>
     </div>
 
     <div v-else class="reply-empty">
-      <p>No reply generated yet. Click "Generate Suggested Reply" or "Extract with AI" above.</p>
+      <p>No response generated yet. Click "Generate Suggested Reply" or "Extract with AI" above.</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useEnquiriesStore } from '../stores/enquiries'
 
 const props = defineProps({
   replyText: {
@@ -67,6 +68,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:replyText'])
+const store = useEnquiriesStore()
+
 const editableReply = ref(props.replyText)
 const isCopied = ref(false)
 
@@ -83,11 +86,11 @@ async function copyReply() {
   try {
     await navigator.clipboard.writeText(editableReply.value)
     isCopied.value = true
+    store.showToast('Suggested reply copied to clipboard!', 'success')
     setTimeout(() => {
       isCopied.value = false
     }, 2000)
   } catch (err) {
-    // Fallback if clipboard API is restricted
     const textArea = document.createElement("textarea")
     textArea.value = editableReply.value
     document.body.appendChild(textArea)
@@ -95,6 +98,7 @@ async function copyReply() {
     document.execCommand('copy')
     document.body.removeChild(textArea)
     isCopied.value = true
+    store.showToast('Suggested reply copied!', 'success')
     setTimeout(() => {
       isCopied.value = false
     }, 2000)
@@ -104,11 +108,11 @@ async function copyReply() {
 
 <style scoped>
 .reply-box-card {
-  background: #ffffff;
-  border: 1px solid #bfdbfe;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.05);
+  box-shadow: var(--shadow-sm);
   margin-top: 1.25rem;
 }
 
@@ -125,17 +129,21 @@ async function copyReply() {
   gap: 0.5rem;
 }
 
+.sparkle-icon {
+  color: var(--primary);
+}
+
 .title {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #1e3a8a;
+  color: var(--text-main);
 }
 
 .lang-pill {
   font-size: 0.675rem;
   font-weight: 700;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--primary-light);
+  color: var(--primary);
   padding: 0.15rem 0.5rem;
   border-radius: 9999px;
   letter-spacing: 0.05em;
@@ -146,7 +154,7 @@ async function copyReply() {
   align-items: center;
   gap: 0.4rem;
   padding: 0.4rem 0.85rem;
-  background-color: #2563eb;
+  background-color: var(--primary);
   color: #ffffff;
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
@@ -155,11 +163,11 @@ async function copyReply() {
 }
 
 .btn-copy:hover {
-  background-color: #1d4ed8;
+  background-color: var(--primary-hover);
 }
 
 .btn-copy.copied {
-  background-color: #16a34a;
+  background-color: var(--success);
 }
 
 .reply-loading {
@@ -167,7 +175,7 @@ async function copyReply() {
   align-items: center;
   gap: 0.75rem;
   padding: 1.5rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.875rem;
   justify-content: center;
 }
@@ -175,8 +183,8 @@ async function copyReply() {
 .spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #e2e8f0;
-  border-top-color: #2563eb;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -193,22 +201,21 @@ async function copyReply() {
   width: 100%;
   padding: 0.75rem;
   border-radius: var(--radius-sm);
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--input-border);
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #1e293b;
+  color: var(--text-main);
   resize: vertical;
-  background-color: #f8fafc;
+  background-color: var(--input-bg);
 }
 
 .reply-textarea:focus {
   outline: none;
-  border-color: #2563eb;
-  background-color: #ffffff;
+  border-color: var(--primary);
 }
 
 .reply-empty {
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.85rem;
   font-style: italic;
   padding: 0.5rem 0;

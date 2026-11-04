@@ -95,3 +95,4 @@ def generate_weekly_summary(db: Session) -> Dict[str, Any]:
         "ai_summary": ai_report,
         "generated_at": datetime.utcnow().isoformat()
     }
+

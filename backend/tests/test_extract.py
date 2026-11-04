@@ -79,3 +79,4 @@ def test_extract_all_20_samples():
         assert item["enquiry_type"] in ["sales", "support", "spam", "job_seeker"]
         assert item["interest"] in ["bootcamp", "fellowship", "corporate", "unknown"]
         assert item["language"] in ["bangla", "banglish", "english"]
+

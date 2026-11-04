@@ -43,12 +43,12 @@ defineProps({
   flex: 1;
   min-width: 280px;
   max-width: 340px;
-  background-color: #f1f5f9;
+  background-color: var(--column-bg);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 170px);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .column-header {
@@ -56,8 +56,8 @@ defineProps({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #e2e8f0;
-  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-surface);
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
 }
@@ -87,13 +87,13 @@ defineProps({
 }
 
 .count-badge {
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-muted);
   font-size: 0.775rem;
   font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 9999px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .cards-container {
@@ -108,9 +108,9 @@ defineProps({
 .empty-column-state {
   padding: 2.5rem 1rem;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.85rem;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--border-color);
   border-radius: var(--radius-md);
   margin: 0.5rem 0;
 }

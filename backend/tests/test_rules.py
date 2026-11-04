@@ -99,3 +99,4 @@ def test_all_20_samples_rules():
 
     # ID 20: Job seeker
     assert results[19]["etype"] == "job_seeker"
+

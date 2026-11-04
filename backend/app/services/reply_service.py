@@ -55,3 +55,4 @@ def suggest_reply(
         enquiry_type=resolved_type,
         name=name
     )
+

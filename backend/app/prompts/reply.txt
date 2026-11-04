@@ -25,3 +25,4 @@ Language to reply in: {reply_language}
 Original Message: "{message}"
 
 Suggested Reply:
+

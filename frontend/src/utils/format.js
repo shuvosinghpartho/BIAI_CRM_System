@@ -49,3 +49,4 @@ export function getInterestBadgeClass(interest) {
   }
   return map[interest?.toLowerCase()] || 'badge-unknown'
 }
+

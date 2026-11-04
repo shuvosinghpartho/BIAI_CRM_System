@@ -44,3 +44,4 @@ def api_suggest_reply(payload: SuggestReplyRequest):
         language=payload.language
     )
     return SuggestReplyResponse(reply=reply_text)
+

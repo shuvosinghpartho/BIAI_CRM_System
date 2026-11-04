@@ -9,6 +9,9 @@ export const useEnquiriesStore = defineStore('enquiries', {
     error: null,
     searchQuery: '',
     selectedChannel: 'all',
+    theme: localStorage.getItem('biai_theme') || 'light',
+    toasts: [],
+    activeModalEnquiry: null,
   }),
 
   getters: {
@@ -39,7 +42,6 @@ export const useEnquiriesStore = defineStore('enquiries', {
     },
 
     pipelineColumns() {
-      const statuses = ['New', 'Contacted', 'Interested', 'Paid', 'Lost']
       const groups = {
         'New': [],
         'Contacted': [],
@@ -71,6 +73,39 @@ export const useEnquiriesStore = defineStore('enquiries', {
   },
 
   actions: {
+    initTheme() {
+      const saved = localStorage.getItem('biai_theme') || 'light'
+      this.theme = saved
+      document.documentElement.setAttribute('data-theme', saved)
+    },
+
+    toggleTheme() {
+      this.theme = this.theme === 'light' ? 'dark' : 'light'
+      localStorage.setItem('biai_theme', this.theme)
+      document.documentElement.setAttribute('data-theme', this.theme)
+      this.showToast(`Switched to ${this.theme} theme`, 'info')
+    },
+
+    showToast(message, type = 'success') {
+      const id = Date.now() + Math.random()
+      this.toasts.push({ id, message, type })
+      setTimeout(() => {
+        this.toasts = this.toasts.filter(t => t.id !== id)
+      }, 3500)
+    },
+
+    removeToast(id) {
+      this.toasts = this.toasts.filter(t => t.id !== id)
+    },
+
+    openDetailModal(enquiry) {
+      this.activeModalEnquiry = { ...enquiry }
+    },
+
+    closeDetailModal() {
+      this.activeModalEnquiry = null
+    },
+
     async fetchAll() {
       this.loading = true
       this.error = null
@@ -82,7 +117,8 @@ export const useEnquiriesStore = defineStore('enquiries', {
         this.enquiries = enqRes.data
         this.overdueList = overdueRes.data
       } catch (err) {
-        this.error = err.response?.data?.detail || err.message
+        this.error = err.message
+        this.showToast(err.message, 'error')
       } finally {
         this.loading = false
       }
@@ -95,12 +131,16 @@ export const useEnquiriesStore = defineStore('enquiries', {
         if (idx !== -1) {
           this.enquiries[idx] = res.data
         }
-        // Refresh overdue list
-        const overdueRes = await api.getOverdue()
-        this.overdueList = overdueRes.data
+        if (this.activeModalEnquiry && this.activeModalEnquiry.id === id) {
+          this.activeModalEnquiry = res.data
+        }
+        // Update overdue list
+        this.overdueList = this.overdueList.filter(o => o.id !== id)
+        this.showToast(`Status updated to "${newStatus}"`, 'success')
         return res.data
       } catch (err) {
-        this.error = err.response?.data?.detail || err.message
+        this.error = err.message
+        this.showToast(`Failed to update status: ${err.message}`, 'error')
         throw err
       }
     },
@@ -112,9 +152,11 @@ export const useEnquiriesStore = defineStore('enquiries', {
         this.enquiries.unshift(res.data)
         const overdueRes = await api.getOverdue()
         this.overdueList = overdueRes.data
+        this.showToast('Enquiry saved to CRM successfully!', 'success')
         return res.data
       } catch (err) {
-        this.error = err.response?.data?.detail || err.message
+        this.error = err.message
+        this.showToast(`Save error: ${err.message}`, 'error')
         throw err
       } finally {
         this.loading = false
@@ -126,8 +168,13 @@ export const useEnquiriesStore = defineStore('enquiries', {
         await api.deleteEnquiry(id)
         this.enquiries = this.enquiries.filter(e => e.id !== id)
         this.overdueList = this.overdueList.filter(e => e.id !== id)
+        if (this.activeModalEnquiry && this.activeModalEnquiry.id === id) {
+          this.activeModalEnquiry = null
+        }
+        this.showToast('Enquiry deleted', 'info')
       } catch (err) {
-        this.error = err.response?.data?.detail || err.message
+        this.error = err.message
+        this.showToast(`Delete error: ${err.message}`, 'error')
         throw err
       }
     }

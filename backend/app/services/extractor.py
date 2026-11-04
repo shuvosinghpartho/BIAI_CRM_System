@@ -88,3 +88,4 @@ def extract_enquiry_data(message: str, source: Optional[str] = None) -> Dict[str
         result["language"] = detect_language(message)
 
     return result
+

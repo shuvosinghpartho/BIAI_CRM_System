@@ -169,14 +169,14 @@ function handleSubmit() {
 label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-main);
 }
 
 .form-control {
   padding: 0.65rem 0.85rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  background-color: #ffffff;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
   color: var(--text-main);
   transition: border-color 0.15s ease;
 }
@@ -184,7 +184,7 @@ label {
 .form-control:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .font-mono {

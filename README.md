@@ -204,3 +204,4 @@ biai-crm/
     ├── NOTE.md                   # Half-page engineering retrospective
     └── LOOM_SCRIPT.md            # 5-minute video walkthrough script
 ```
+

@@ -45,43 +45,43 @@ function handleChange(val) {
   font-size: 0.775rem;
   font-weight: 600;
   border: 1px solid var(--border-color);
-  background-color: #fff;
+  background-color: var(--card-bg);
   cursor: pointer;
   outline: none;
   transition: all 0.15s ease;
 }
 
 .status-select:hover {
-  border-color: #94a3b8;
+  border-color: var(--primary);
 }
 
 .status-new {
   color: #2563eb;
-  background-color: #eff6ff;
-  border-color: #bfdbfe;
+  background-color: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.3);
 }
 
 .status-contacted {
   color: #d97706;
-  background-color: #fffbeb;
-  border-color: #fde68a;
+  background-color: rgba(217, 119, 6, 0.12);
+  border-color: rgba(217, 119, 6, 0.3);
 }
 
 .status-interested {
   color: #7c3aed;
-  background-color: #f5f3ff;
-  border-color: #ddd6fe;
+  background-color: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.3);
 }
 
 .status-paid {
   color: #16a34a;
-  background-color: #f0fdf4;
-  border-color: #bbf7d0;
+  background-color: rgba(22, 163, 74, 0.12);
+  border-color: rgba(22, 163, 74, 0.3);
 }
 
 .status-lost {
-  color: #64748b;
-  background-color: #f8fafc;
-  border-color: #e2e8f0;
+  color: var(--text-muted);
+  background-color: var(--bg-surface-elevated);
+  border-color: var(--border-color);
 }
 </style>

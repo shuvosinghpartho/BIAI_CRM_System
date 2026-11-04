@@ -2,10 +2,26 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: '',
+  timeout: 30000, // 30s timeout for AI requests
   headers: {
     'Content-Type': 'application/json'
   }
 })
+
+// Global response error handler
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    let message = 'Network connection error. Please ensure the backend is running.'
+    if (error.response?.data?.detail) {
+      message = error.response.data.detail
+    } else if (error.message) {
+      message = error.message
+    }
+    console.error('[API Error]:', message)
+    return Promise.reject(new Error(message))
+  }
+)
 
 export default {
   // Enquiries CRUD

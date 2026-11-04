@@ -22,3 +22,4 @@ def get_weekly_summary_report(db: Session = Depends(get_db)):
     Returns an AI-generated weekly CRM summary along with metrics.
     """
     return generate_weekly_summary(db)
+

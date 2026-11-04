@@ -85,3 +85,4 @@
 > - The backend runs on FastAPI with SQLite and APScheduler, while the frontend is a responsive Vue 3 Single Page Application with Pinia and Vue Router.
 >
 > Thank you for watching, and we look forward to empowering BIAI's admissions and growth!"
+

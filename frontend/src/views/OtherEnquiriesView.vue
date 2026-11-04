@@ -63,7 +63,7 @@
             class="btn-suggest"
             @click="activeReplyId = activeReplyId === item.id ? null : item.id"
           >
-            {{ activeReplyId === item.id ? 'Close' : 'Generate Reply' }}
+            {{ activeReplyId === item.id ? 'Close Reply' : 'Suggested Reply' }}
           </button>
         </div>
 
@@ -79,7 +79,7 @@
     </div>
 
     <div v-else class="empty-state">
-      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <rect width="20" height="16" x="2" y="4" rx="2"/>
         <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
       </svg>
@@ -157,9 +157,10 @@ function formatType(type) {
 .type-filter-tabs {
   display: flex;
   gap: 0.5rem;
-  background: #f1f5f9;
+  background: var(--bg-surface-elevated);
   padding: 0.25rem;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 
 .tab-btn {
@@ -167,7 +168,7 @@ function formatType(type) {
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--text-muted);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -175,16 +176,17 @@ function formatType(type) {
 }
 
 .tab-btn.active {
-  background: #ffffff;
+  background: var(--bg-surface);
   color: var(--text-main);
   box-shadow: var(--shadow-sm);
 }
 
 .tab-count {
-  background: #e2e8f0;
+  background: var(--border-color);
   padding: 0.1rem 0.45rem;
   border-radius: 9999px;
   font-size: 0.725rem;
+  color: var(--text-main);
 }
 
 .tab-btn.active .tab-count {
@@ -199,7 +201,7 @@ function formatType(type) {
 }
 
 .other-card {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 1.25rem;
@@ -210,7 +212,7 @@ function formatType(type) {
 }
 
 .other-card.type-support {
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--warning);
 }
 
 .other-card.type-job_seeker {
@@ -218,23 +220,23 @@ function formatType(type) {
 }
 
 .other-card.type-spam {
-  border-left: 4px solid #ef4444;
+  border-left: 4px solid var(--danger);
   opacity: 0.85;
 }
 
 .badge-support {
-  background-color: #fef3c7;
-  color: #b45309;
+  background-color: var(--warning-light);
+  color: var(--warning);
 }
 
 .badge-job_seeker {
-  background-color: #f3e8ff;
-  color: #7e22ce;
+  background-color: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
 }
 
 .badge-spam {
-  background-color: #fee2e2;
-  color: #b91c1c;
+  background-color: var(--danger-light);
+  color: var(--danger);
 }
 
 .card-header {
@@ -265,24 +267,25 @@ function formatType(type) {
 
 .message-content {
   font-size: 0.875rem;
-  color: #334155;
+  color: var(--text-main);
   line-height: 1.5;
-  background-color: #f8fafc;
+  background-color: var(--bg-surface-elevated);
   padding: 0.75rem;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 
 .card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border-color);
   padding-top: 0.5rem;
 }
 
 .date-text {
   font-size: 0.775rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .btn-suggest {
@@ -298,7 +301,7 @@ function formatType(type) {
 .empty-state {
   text-align: center;
   padding: 4rem 1rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   display: flex;
   flex-direction: column;
   align-items: center;

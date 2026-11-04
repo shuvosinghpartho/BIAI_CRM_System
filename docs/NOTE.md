@@ -41,3 +41,4 @@
 2. Add multi-user role-based access control (RBAC) separating sales counselors from executive admins.
 3. Add drag-and-drop support with optimistic UI updates in the pipeline board.
 4. Implement automated WhatsApp follow-up messaging triggers when an enquiry reaches 48 hours without contact.
+

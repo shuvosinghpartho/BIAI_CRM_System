@@ -1,5 +1,11 @@
 import logging
+import warnings
 from contextlib import asynccontextmanager
+
+# Suppress urllib3 and SSL deprecation notices
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler

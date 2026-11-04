@@ -135,3 +135,4 @@ def extract_with_rules(text: str, default_source: str = "website") -> Dict[str, 
         "enquiry_type": extract_enquiry_type(text),
         "language": detect_language(text),
     }
+

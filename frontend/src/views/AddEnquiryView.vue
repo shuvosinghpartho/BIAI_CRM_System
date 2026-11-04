@@ -44,7 +44,7 @@
               <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
               </svg>
-              <span>{{ extracting ? 'Analyzing with Gemini AI...' : 'Extract with AI' }}</span>
+              <span>{{ extracting ? 'Analyzing message with AI...' : 'Extract with AI' }}</span>
             </button>
           </div>
         </div>
@@ -142,13 +142,13 @@ async function handleExtract() {
       message: rawMessage.value
     }
 
-    // Simultaneously fetch suggested reply
+    store.showToast('Fields extracted from message!', 'success')
     generateReply()
   } catch (err) {
     console.error("Extraction error:", err)
-    // Fallback populated
     extractedData.value.message = rawMessage.value
     extractedData.value.source = incomingSource.value
+    store.showToast('Processed using rule engine.', 'info')
   } finally {
     extracting.value = false
   }
@@ -181,11 +181,9 @@ async function handleSave(formData) {
     }
     await store.addEnquiry(payload)
     saveSuccess.value = true
-    
-    // Clear paste box
     rawMessage.value = ''
   } catch (err) {
-    alert("Error saving enquiry: " + err.message)
+    store.showToast("Error saving enquiry: " + err.message, 'error')
   } finally {
     saving.value = false
   }
@@ -206,7 +204,7 @@ async function handleSave(formData) {
 }
 
 .card {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -224,7 +222,7 @@ async function handleSave(formData) {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-md);
-  background: #eff6ff;
+  background: var(--primary-light);
   color: var(--primary);
   display: flex;
   align-items: center;
@@ -232,8 +230,8 @@ async function handleSave(formData) {
 }
 
 .header-icon.green {
-  background: #f0fdf4;
-  color: #16a34a;
+  background: var(--success-light);
+  color: var(--success);
 }
 
 .card-title {
@@ -254,6 +252,7 @@ async function handleSave(formData) {
   margin-bottom: 0.75rem;
   font-size: 0.85rem;
   font-weight: 600;
+  color: var(--text-main);
 }
 
 .channel-options {
@@ -266,6 +265,7 @@ async function handleSave(formData) {
   align-items: center;
   gap: 0.35rem;
   cursor: pointer;
+  color: var(--text-main);
 }
 
 .capitalize {
@@ -276,17 +276,16 @@ async function handleSave(formData) {
   width: 100%;
   padding: 0.85rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   font-size: 0.925rem;
   color: var(--text-main);
-  background-color: #f8fafc;
+  background-color: var(--input-bg);
   resize: vertical;
 }
 
 .raw-textarea:focus {
   outline: none;
   border-color: var(--primary);
-  background-color: #fff;
 }
 
 .paste-actions {
@@ -296,7 +295,7 @@ async function handleSave(formData) {
 }
 
 .btn-extract {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: #fff;
   padding: 0.6rem 1.25rem;
   border-radius: var(--radius-sm);
@@ -305,7 +304,7 @@ async function handleSave(formData) {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
 }
 
 .btn-extract:disabled {
@@ -327,9 +326,9 @@ async function handleSave(formData) {
 }
 
 .success-banner {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+  background-color: var(--success-light);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--success);
   padding: 0.85rem 1.25rem;
   border-radius: var(--radius-sm);
   margin-top: 1rem;
@@ -342,7 +341,7 @@ async function handleSave(formData) {
 
 .pipeline-link {
   margin-left: auto;
-  color: #15803d;
+  color: var(--success);
   text-decoration: underline;
 }
 </style>

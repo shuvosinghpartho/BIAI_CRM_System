@@ -40,3 +40,4 @@ def get_template_reply(
         tpl = lang_dict.get(interest, lang_dict["unknown"])
 
     return tpl.format(name_part=name_part)
+

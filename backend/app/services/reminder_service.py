@@ -33,3 +33,4 @@ def is_enquiry_overdue(enquiry: Enquiry) -> bool:
     cutoff = datetime.utcnow() - timedelta(hours=FOLLOWUP_HOURS)
     ref_time = enquiry.last_contacted_at or enquiry.created_at
     return ref_time <= cutoff
+

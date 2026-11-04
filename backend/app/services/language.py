@@ -44,3 +44,4 @@ def get_reply_language(detected_lang: str) -> str:
     if detected_lang == "english":
         return "english"
     return "banglish"
+

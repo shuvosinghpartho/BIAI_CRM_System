@@ -1,5 +1,9 @@
 <template>
-  <div class="enquiry-card" :class="{ 'is-overdue': overdue }">
+  <div
+    class="enquiry-card"
+    :class="{ 'is-overdue': overdue }"
+    @click="openModal"
+  >
     <div class="card-top">
       <div class="sender-info">
         <h4 class="sender-name">{{ enquiry.name || 'Anonymous Sender' }}</h4>
@@ -32,7 +36,7 @@
     </p>
 
     <!-- Footer with Timestamp & Status Dropdown -->
-    <div class="card-footer">
+    <div class="card-footer" @click.stop>
       <div class="time-meta">
         <span class="time-text">{{ formatTimeAgo(enquiry.created_at) }}</span>
       </div>
@@ -42,38 +46,29 @@
       />
     </div>
 
-    <!-- View / Generate Reply Modal trigger or toggle -->
-    <div v-if="showQuickReply" class="quick-reply-section">
-      <ReplyBox
-        :reply-text="replyText"
-        :loading="generatingReply"
-        :language="enquiry.language"
-        @update:reply-text="replyText = $event"
-      />
-    </div>
-
-    <div class="card-actions">
+    <!-- Quick action links -->
+    <div class="card-actions" @click.stop>
       <button
         type="button"
         class="btn-text-action"
-        @click="toggleReply"
+        @click="openModal"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
         </svg>
-        {{ showQuickReply ? 'Hide Reply' : 'Suggested Reply' }}
+        Details & Reply
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useEnquiriesStore } from '../stores/enquiries'
 import StatusSelect from './StatusSelect.vue'
 import OverdueBadge from './OverdueBadge.vue'
-import ReplyBox from './ReplyBox.vue'
-import api from '../api/client'
 import {
   formatTimeAgo,
   getChannelBadgeClass,
@@ -88,41 +83,20 @@ const props = defineProps({
 })
 
 const store = useEnquiriesStore()
-const showQuickReply = ref(false)
-const generatingReply = ref(false)
-const replyText = ref(props.enquiry.ai_reply || '')
-
 const overdue = computed(() => store.isOverdue(props.enquiry))
 
 async function handleStatusChange(newStatus) {
   await store.updateStatus(props.enquiry.id, newStatus)
 }
 
-async function toggleReply() {
-  showQuickReply.value = !showQuickReply.value
-  if (showQuickReply.value && !replyText.value) {
-    generatingReply.value = true
-    try {
-      const res = await api.suggestReply({
-        message: props.enquiry.message,
-        name: props.enquiry.name,
-        interest: props.enquiry.interest,
-        enquiry_type: props.enquiry.enquiry_type,
-        language: props.enquiry.language
-      })
-      replyText.value = res.data.reply
-    } catch (e) {
-      replyText.value = "Failed to generate reply. Please try again."
-    } finally {
-      generatingReply.value = false
-    }
-  }
+function openModal() {
+  store.openDetailModal(props.enquiry)
 }
 </script>
 
 <style scoped>
 .enquiry-card {
-  background: #ffffff;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 1rem;
@@ -130,17 +104,19 @@ async function toggleReply() {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  transition: all 0.15s ease;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .enquiry-card:hover {
   box-shadow: var(--shadow-md);
-  border-color: #cbd5e1;
+  border-color: var(--primary);
+  transform: translateY(-2px);
 }
 
 .enquiry-card.is-overdue {
   border-left: 4px solid var(--danger);
-  background-color: #fffafb;
+  background: var(--danger-light);
 }
 
 .card-top {
@@ -179,16 +155,16 @@ async function toggleReply() {
 
 .message-preview {
   font-size: 0.85rem;
-  color: #334155;
+  color: var(--text-main);
   line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  background-color: #f8fafc;
+  background-color: var(--bg-surface-elevated);
   padding: 0.5rem 0.65rem;
   border-radius: var(--radius-sm);
-  border-left: 2px solid #cbd5e1;
+  border-left: 2px solid var(--border-color);
 }
 
 .card-footer {
@@ -196,12 +172,12 @@ async function toggleReply() {
   align-items: center;
   justify-content: space-between;
   padding-top: 0.4rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border-color);
 }
 
 .time-text {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .card-actions {
@@ -221,14 +197,5 @@ async function toggleReply() {
 .btn-text-action:hover {
   color: var(--primary-hover);
   text-decoration: underline;
-}
-
-.quick-reply-section {
-  animation: fadeIn 0.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 </style>
