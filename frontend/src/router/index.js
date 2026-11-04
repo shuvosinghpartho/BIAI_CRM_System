@@ -1,9 +1,12 @@
+import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import PipelineView from '../views/PipelineView.vue'
 import AddEnquiryView from '../views/AddEnquiryView.vue'
 import OtherEnquiriesView from '../views/OtherEnquiriesView.vue'
 import SummaryView from '../views/SummaryView.vue'
 import { setDynamicFavicon } from '../utils/dynamicFavicon'
+
+export const isNavigating = ref(false)
 
 const routes = [
   {
@@ -37,8 +40,18 @@ const router = createRouter({
   routes
 })
 
+router.beforeEach((to, from, next) => {
+  if (to.path !== from.path) {
+    isNavigating.value = true
+  }
+  next()
+})
+
 router.afterEach((to) => {
   setDynamicFavicon(to.path, 0)
+  setTimeout(() => {
+    isNavigating.value = false
+  }, 380)
 })
 
 export default router

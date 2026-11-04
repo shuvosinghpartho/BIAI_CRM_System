@@ -1,5 +1,43 @@
 <template>
   <div class="app-container">
+    <!-- Top Cyber Route Progress Bar (Active when switching pages) -->
+    <div class="route-progress-container" :class="{ active: isNavigating }">
+      <div class="route-progress-bar">
+        <div class="progress-glow-head"></div>
+      </div>
+    </div>
+
+    <!-- Initial App Splash Preloader (When loading the site) -->
+    <Transition name="splash-fade">
+      <div v-if="isAppInitializing" class="app-splash-preloader">
+        <div class="splash-card">
+          <div class="splash-logo-container">
+            <div class="splash-logo-orb">
+              <span>B</span>
+            </div>
+            <div class="splash-pulse-ring ring-1"></div>
+            <div class="splash-pulse-ring ring-2"></div>
+          </div>
+          
+          <div class="splash-branding">
+            <h2 class="splash-title">BIAI<span class="splash-tag">CRM</span></h2>
+            <p class="splash-subtitle">Admissions & Pipeline Intelligence System</p>
+          </div>
+
+          <div class="splash-progress-track">
+            <div class="splash-progress-fill">
+              <div class="splash-streak"></div>
+            </div>
+          </div>
+
+          <div class="splash-status-text">
+            <span class="splash-pulse-dot"></span>
+            <span>Initializing Workspace & AI Engine...</span>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Desktop Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -122,8 +160,13 @@
         </div>
       </header>
 
+      <!-- Smooth Page Transition Area -->
       <main class="page-body">
-        <RouterView />
+        <RouterView v-slot="{ Component, route: currentRoute }">
+          <Transition name="page-fade-slide" mode="out-in">
+            <component :is="Component" :key="currentRoute.path" />
+          </Transition>
+        </RouterView>
       </main>
     </div>
 
@@ -186,13 +229,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, RouterLink, RouterView } from 'vue-router'
 import { useEnquiriesStore } from './stores/enquiries'
+import { isNavigating } from './router/index'
 import { setDynamicFavicon, updatePageMeta } from './utils/dynamicFavicon'
 
 const route = useRoute()
 const store = useEnquiriesStore()
+
+const isAppInitializing = ref(true)
 
 const otherCount = computed(() => store.otherEnquiries.length)
 const overdueCount = computed(() => store.overdueCount)
@@ -231,13 +277,258 @@ watch(
   { immediate: true }
 )
 
-onMounted(() => {
+onMounted(async () => {
   store.initTheme()
-  store.fetchAll()
+  try {
+    await store.fetchAll()
+  } finally {
+    // Smooth reveal after initial workspace load
+    setTimeout(() => {
+      isAppInitializing.value = false
+    }, 650)
+  }
 })
 </script>
 
 <style scoped>
+/* ==========================================================================
+   TOP CYBER ROUTE PROGRESS BAR (When switching pages)
+   ========================================================================== */
+.route-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 999999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.route-progress-container.active {
+  opacity: 1;
+}
+
+.route-progress-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #e11d48, #a855f7, #38bdf8);
+  box-shadow: 0 0 12px #e11d48, 0 0 20px #a855f7;
+  position: relative;
+  animation: routeLoad 0.4s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+.progress-glow-head {
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 20px;
+  height: 7px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 14px #ffffff, 0 0 24px #38bdf8;
+}
+
+@keyframes routeLoad {
+  0% { transform: scaleX(0); transform-origin: left; }
+  60% { transform: scaleX(0.75); transform-origin: left; }
+  100% { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ==========================================================================
+   SMOOTH PAGE TRANSITIONS (Between routes)
+   ========================================================================== */
+.page-fade-slide-enter-active,
+.page-fade-slide-leave-active {
+  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.page-fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(12px) scale(0.995);
+}
+
+.page-fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.995);
+}
+
+/* ==========================================================================
+   INITIAL APP SPLASH PRELOADER (When site loads)
+   ========================================================================== */
+.app-splash-preloader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-app);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999998;
+}
+
+.splash-fade-enter-active,
+.splash-fade-leave-active {
+  transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+}
+
+.splash-fade-enter-from,
+.splash-fade-leave-to {
+  opacity: 0;
+  transform: scale(1.03);
+}
+
+.splash-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+  padding: 2.5rem 3rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 40px var(--primary-glow);
+  max-width: 440px;
+  width: 90%;
+}
+
+.splash-logo-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-logo-orb {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.6rem;
+  box-shadow: 0 0 25px var(--primary-glow);
+  z-index: 2;
+}
+
+.splash-pulse-ring {
+  position: absolute;
+  border-radius: 22px;
+  border: 2px solid var(--primary);
+  pointer-events: none;
+  animation: splashRipple 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.ring-1 {
+  width: 72px;
+  height: 72px;
+}
+
+.ring-2 {
+  width: 88px;
+  height: 88px;
+  animation-delay: 1s;
+}
+
+@keyframes splashRipple {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.splash-branding {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.splash-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.splash-tag {
+  color: var(--primary);
+  font-size: 0.85rem;
+  background: var(--primary-light);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  margin-left: 0.4rem;
+}
+
+.splash-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.splash-progress-track {
+  width: 100%;
+  height: 5px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.splash-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #e11d48, #a855f7, #38bdf8);
+  border-radius: 9999px;
+  position: relative;
+  animation: splashProgressSweep 1.2s ease-in-out infinite alternate;
+}
+
+.splash-streak {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: streakMove 1.4s infinite;
+}
+
+@keyframes splashProgressSweep {
+  0% { width: 30%; }
+  100% { width: 95%; }
+}
+
+@keyframes streakMove {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.splash-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.splash-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  animation: pulse-dot-anim 1.5s infinite;
+}
+
+/* ==========================================================================
+   PAGE LAYOUT
+   ========================================================================== */
 .page-body {
   flex: 1;
   display: flex;

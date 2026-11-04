@@ -11,8 +11,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Instant Boot Splash Screen (Displays immediately before JS parses) -->
+      <div id="boot-preloader" style="position: fixed; inset: 0; background: #09090b; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999999; font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
+        <div style="position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #e11d48, #be123c); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px; font-weight: 800; box-shadow: 0 0 30px rgba(225, 29, 72, 0.5); z-index: 2;">B</div>
+          <div style="position: absolute; width: 68px; height: 68px; border-radius: 18px; border: 2px solid rgba(225, 29, 72, 0.4); animation: bootPulse 1.8s infinite ease-out;"></div>
+        </div>
+        <div style="margin-top: 18px; font-size: 18px; font-weight: 800; color: #f4f4f5; letter-spacing: -0.01em;">BIAI<span style="color: #ef4444; font-size: 13px; font-weight: 800; background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 6px; margin-left: 6px;">CRM</span></div>
+        <div style="margin-top: 6px; font-size: 12px; color: #71717a; font-weight: 600;">Admissions & Pipeline Intelligence</div>
+        <div style="margin-top: 22px; width: 140px; height: 4px; background: #18181c; border-radius: 9999px; overflow: hidden; position: relative;">
+          <div style="width: 60px; height: 100%; background: linear-gradient(90deg, #e11d48, #ef4444); border-radius: 9999px; animation: bootSlide 1.2s infinite ease-in-out;"></div>
+        </div>
+        <style>
+          @keyframes bootPulse { 0% { transform: scale(0.9); opacity: 0.9; } 100% { transform: scale(1.35); opacity: 0; } }
+          @keyframes bootSlide { 0% { transform: translateX(-60px); } 100% { transform: translateX(140px); } }
+        </style>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
-
