@@ -61,20 +61,97 @@
 
     <!-- Two-Column Layout -->
     <div class="summary-columns">
-      <!-- Left Column: AI Executive Summary -->
+      <!-- Left Column: Executive AI Intelligence Report Card (Redesigned) -->
       <div class="ai-report-card card-box">
+        <!-- Card Top Gradient Accent Line -->
+        <div class="report-top-accent"></div>
+
+        <!-- Executive Card Header -->
         <div class="report-header">
-          <div class="report-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
-            </svg>
+          <div class="header-branding">
+            <div class="report-icon-glow">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="title-with-pill">
+                <h3 class="report-title">Weekly AI Intelligence Report</h3>
+                <span class="brief-pill">EXECUTIVE BRIEF</span>
+              </div>
+              <div class="meta-row">
+                <span class="report-timestamp">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  Generated: {{ formatDate(generatedAt) }}
+                </span>
+                <span class="status-live-tag">
+                  <span class="pulse-green-dot"></span>
+                  Verified Intelligence
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 class="report-title">Weekly AI Intelligence Report</h3>
-            <span class="report-timestamp">Generated: {{ formatDate(generatedAt) }}</span>
+
+          <!-- Header Right Quick Actions -->
+          <div class="header-actions-group">
+            <button
+              type="button"
+              class="btn-report-action"
+              :class="{ copied: isReportCopied }"
+              @click="copyFullReport"
+              title="Copy Report to Clipboard"
+            >
+              <svg v-if="!isReportCopied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>{{ isReportCopied ? 'Copied!' : 'Copy Report' }}</span>
+            </button>
+
+            <button
+              type="button"
+              class="btn-report-action icon-only"
+              :disabled="loadingSummary"
+              @click="fetchSummary(true)"
+              title="Refresh Report"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'spin-anim': loadingSummary }">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+              </svg>
+            </button>
           </div>
         </div>
 
+        <!-- Quick KPI Executive Strip inside card -->
+        <div class="executive-kpi-strip">
+          <div class="kpi-mini-item">
+            <span class="kpi-mini-label">Total Leads</span>
+            <strong class="kpi-mini-val">{{ stats.total_enquiries || store.enquiries.length }}</strong>
+          </div>
+          <div class="kpi-mini-divider"></div>
+          <div class="kpi-mini-item">
+            <span class="kpi-mini-label">SLA Overdue</span>
+            <strong class="kpi-mini-val text-red">{{ overdueList.length }}</strong>
+          </div>
+          <div class="kpi-mini-divider"></div>
+          <div class="kpi-mini-item">
+            <span class="kpi-mini-label">Top Demand</span>
+            <strong class="kpi-mini-val text-primary capitalize">{{ topTrack }}</strong>
+          </div>
+          <div class="kpi-mini-divider"></div>
+          <div class="kpi-mini-item">
+            <span class="kpi-mini-label">Primary Channel</span>
+            <strong class="kpi-mini-val text-indigo capitalize">{{ topChannel }}</strong>
+          </div>
+        </div>
+
+        <!-- Loading State Skeleton -->
         <div v-if="loadingSummary" class="loading-state">
           <div class="spinner-large"></div>
           <div class="loading-pulse-text">
@@ -89,8 +166,9 @@
           </div>
         </div>
 
+        <!-- Rendered Report Content with High-End Styling -->
         <div v-else class="report-content">
-          <div class="markdown-body" v-html="formattedSummary"></div>
+          <div class="executive-report-body" v-html="formattedSummary"></div>
         </div>
       </div>
 
@@ -167,6 +245,7 @@ const loadingSummary = ref(false)
 const rawSummaryText = ref('')
 const generatedAt = ref('')
 const stats = ref({})
+const isReportCopied = ref(false)
 
 const overdueList = computed(() => store.overdueList)
 
@@ -190,19 +269,86 @@ const topTrack = computed(() => {
   return top !== 'N/A' ? top : 'Bootcamp'
 })
 
-// Markdown converter for clean HTML rendering
+// Rich Executive Markdown Parser
 const formattedSummary = computed(() => {
   if (!rawSummaryText.value) return ''
-  return rawSummaryText.value
-    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-    .replace(/^- (.*$)/gim, '<li>$1</li>')
-    .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
-    .replace(/\n\n/gim, '<br/><br/>')
+  let text = rawSummaryText.value.replace(/\r\n/g, '\n')
+
+  // Remove top document title since the card header already displays it prominently
+  text = text.replace(/^#\s+(?:Executive CRM Summary|BIAI Weekly Executive|Weekly).*$/gim, '')
+  text = text.replace(/^\*\*Prepared (?:by|for):\*\*.*$/gim, '')
+  text = text.replace(/^\*\*Reporting Period:\*\*.*$/gim, '')
+
+  // Format Bold & Italics
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>')
+
+  // Format horizontal rules into sleek dividers
+  text = text.replace(/^---$/gm, '<div class="report-divider"></div>')
+
+  // Wrap Strategic Assessment / Insights in a dedicated highlighted executive callout box
+  text = text.replace(
+    /(?:<strong>Strategic Assessment:<\/strong>|<strong>Recommendations:<\/strong>)([\s\S]*?)(?=(?:\n<div class="report-divider"|\n###|\n##|$))/gi,
+    (match, content) => {
+      return `<div class="strategic-callout">
+        <div class="callout-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          STRATEGIC ASSESSMENT
+        </div>
+        <p class="callout-text">${content.trim()}</p>
+      </div>`
+    }
+  )
+
+  // Section Headers: Convert "### 1. Executive Overview" into structured header with icon and badge
+  text = text.replace(/^###\s+(?:(\d+)\.\s*)?(.*$)/gm, (match, num, title) => {
+    const formattedNum = num ? `<span class="sec-badge-num">0${num}</span>` : `<span class="sec-badge-dot"></span>`
+    return `<div class="sec-header">${formattedNum}<h4 class="sec-title">${title.trim()}</h4></div>`
+  })
+
+  // Also support "## 1. Title"
+  text = text.replace(/^##\s+(?:(\d+)\.\s*)?(.*$)/gm, (match, num, title) => {
+    const formattedNum = num ? `<span class="sec-badge-num">0${num}</span>` : `<span class="sec-badge-dot"></span>`
+    return `<div class="sec-header">${formattedNum}<h4 class="sec-title">${title.trim()}</h4></div>`
+  })
+
+  // Format numbered recommendation items (1. Item) into Action Cards
+  text = text.replace(/^(\d+)\.\s+(.*$)/gm, (match, num, body) => {
+    return `<div class="rec-card">
+      <div class="rec-badge-number">${num}</div>
+      <div class="rec-body">${body}</div>
+    </div>`
+  })
+
+  // Format bullet items (* or -) into styled rows with indicator dots
+  text = text.replace(/^[\*\-]\s+(.*$)/gm, (match, item) => {
+    // Check if sub-item or indented
+    return `<div class="bullet-row"><span class="bullet-dot"></span><div class="bullet-text">${item}</div></div>`
+  })
+
+  // Clean empty lines and wrap paragraphs
+  return text
+    .split(/\n\s*\n/)
+    .map(block => {
+      block = block.trim()
+      if (!block) return ''
+      if (block.startsWith('<div') || block.startsWith('<hr')) return block
+      return `<p class="report-p">${block.replace(/\n/g, '<br/>')}</p>`
+    })
+    .join('\n')
 })
+
+function copyFullReport() {
+  if (!rawSummaryText.value) return
+  navigator.clipboard.writeText(rawSummaryText.value)
+  isReportCopied.value = true
+  store.showToast('Full AI Intelligence report copied to clipboard!', 'success')
+  setTimeout(() => {
+    isReportCopied.value = false
+  }, 2200)
+}
 
 async function fetchSummary(force = false) {
   loadingSummary.value = true
@@ -308,6 +454,14 @@ onMounted(() => {
   color: var(--danger);
 }
 
+.text-primary {
+  color: var(--primary);
+}
+
+.text-indigo {
+  color: #6366f1;
+}
+
 .metric-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -315,11 +469,380 @@ onMounted(() => {
 
 .summary-columns {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1.35fr 0.85fr;
   gap: 1.5rem;
 }
 
-.ai-report-card,
+/* ==========================================================================
+   EXECUTIVE AI REPORT CARD REDESIGN
+   ========================================================================== */
+.ai-report-card {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Sleek top accent line */
+.report-top-accent {
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, #e11d48 0%, #a855f7 50%, #3b82f6 100%);
+}
+
+.report-header {
+  padding: 1.35rem 1.6rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-branding {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-icon-glow {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px var(--primary-glow);
+  flex-shrink: 0;
+}
+
+.title-with-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.report-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.brief-pill {
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: rgba(225, 29, 72, 0.12);
+  color: var(--primary);
+  border: 1px solid rgba(225, 29, 72, 0.3);
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  letter-spacing: 0.06em;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.report-timestamp {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+}
+
+.status-live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 0.1rem 0.55rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.pulse-green-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulse-dot-anim 1.8s infinite;
+}
+
+@keyframes pulse-dot-anim {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-report-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-report-action:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--bg-surface-hover);
+}
+
+.btn-report-action.copied {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: #10b981;
+}
+
+.btn-report-action.icon-only {
+  padding: 0.45rem;
+}
+
+.spin-anim {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Executive KPI Strip inside Card */
+.executive-kpi-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.85rem 1.4rem;
+  background: var(--bg-surface-elevated);
+  border-bottom: 1px solid var(--border-color);
+  gap: 0.5rem;
+}
+
+.kpi-mini-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.kpi-mini-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kpi-mini-val {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.kpi-mini-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+}
+
+/* Report Content Body */
+.report-content {
+  padding: 1.5rem 1.6rem 1.75rem;
+  overflow-y: auto;
+  max-height: 640px;
+}
+
+.executive-report-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Deep-rendered Section Headers */
+:deep(.sec-header) {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+:deep(.sec-header:first-of-type) {
+  margin-top: 0;
+}
+
+:deep(.sec-badge-num) {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.15), rgba(168, 85, 247, 0.15));
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.78rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+:deep(.sec-badge-dot) {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 6px var(--primary);
+}
+
+:deep(.sec-title) {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+/* Deep-rendered Strategic Assessment Box */
+:deep(.strategic-callout) {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.05), rgba(168, 85, 247, 0.04));
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin: 0.85rem 0;
+}
+
+:deep(.callout-badge) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+}
+
+:deep(.callout-text) {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Deep-rendered Bullet Rows */
+:deep(.bullet-row) {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  font-size: 0.885rem;
+  line-height: 1.55;
+  color: var(--text-main);
+}
+
+:deep(.bullet-dot) {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+  margin-top: 0.45rem;
+}
+
+:deep(.bullet-text strong) {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* Deep-rendered Recommendation Action Cards */
+:deep(.rec-card) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.15rem;
+  margin: 0.5rem 0;
+  transition: all 0.2s ease;
+}
+
+:deep(.rec-card:hover) {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+:deep(.rec-badge-number) {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+:deep(.rec-body) {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+:deep(.rec-body strong) {
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+:deep(.report-divider) {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+  margin: 1.25rem 0;
+}
+
+:deep(.report-p) {
+  font-size: 0.885rem;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+
+/* Overdue list card */
 .overdue-list-card {
   padding: 1.4rem;
   display: flex;
@@ -327,41 +850,12 @@ onMounted(() => {
   gap: 1.15rem;
 }
 
-.report-header,
 .overdue-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.85rem;
-}
-
-.report-header {
-  justify-content: flex-start;
-  gap: 0.85rem;
-}
-
-.report-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px var(--primary-glow);
-}
-
-.report-title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.report-timestamp {
-  font-size: 0.75rem;
-  color: var(--text-muted);
 }
 
 .overdue-title-group {
@@ -380,87 +874,11 @@ onMounted(() => {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1.5rem;
-  gap: 1rem;
-  text-align: center;
-}
-
-.spinner-large {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.loading-pulse-text h4 {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 0.25rem;
-}
-
-.loading-pulse-text p {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-.shimmer-lines {
-  width: 100%;
-  max-width: 450px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 1rem;
-}
-
-.report-content {
-  line-height: 1.7;
-  font-size: 0.9rem;
-  color: var(--text-main);
-}
-
-.markdown-body :deep(h1),
-.markdown-body :deep(h2),
-.markdown-body :deep(h3) {
-  margin-top: 1rem;
-  margin-bottom: 0.4rem;
-  color: var(--text-main);
-  font-weight: 800;
-}
-
-.markdown-body :deep(h2) {
-  font-size: 1.15rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.3rem;
-}
-
-.markdown-body :deep(h3) {
-  font-size: 1rem;
-  color: var(--primary);
-}
-
-.markdown-body :deep(strong) {
-  color: var(--text-main);
-  font-weight: 700;
-}
-
-.markdown-body :deep(li) {
-  margin-left: 1.25rem;
-  margin-bottom: 0.35rem;
-}
-
 .overdue-items {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  max-height: 520px;
+  max-height: 580px;
   overflow-y: auto;
 }
 
@@ -557,9 +975,60 @@ onMounted(() => {
   max-width: 320px;
 }
 
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.5rem 1.5rem;
+  gap: 1rem;
+  text-align: center;
+}
+
+.spinner-large {
+  width: 42px;
+  height: 42px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-pulse-text h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.loading-pulse-text p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.shimmer-lines {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
 @media (max-width: 1024px) {
   .summary-columns {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .executive-kpi-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .kpi-mini-divider {
+    display: none;
   }
 }
 </style>

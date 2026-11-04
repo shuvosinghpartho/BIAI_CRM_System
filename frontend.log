@@ -3,3 +3,5 @@
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: http://192.168.0.100:5173/
+12:17:33 AM [vite] page reload src/utils/dynamicFavicon.js
+12:20:56 AM [vite] hmr update /src/views/SummaryView.vue, /src/views/SummaryView.vue?vue&type=style&index=0&scoped=cfa7e0d1&lang.css

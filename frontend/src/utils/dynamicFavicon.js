@@ -79,3 +79,4 @@ export function updatePageMeta(routeName, extraInfo = {}) {
 
   document.title = title
 }
+
