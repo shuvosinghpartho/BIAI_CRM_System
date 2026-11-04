@@ -55,7 +55,12 @@ class GeminiService:
         self._cache: Dict[str, Any] = {}
         if self.api_key:
             try:
-                self.client = genai.Client(api_key=self.api_key)
+                # Configure fast timeout (10s) and single attempt (no SDK-level multi-minute retries)
+                http_opts = types.HttpOptions(
+                    timeout=10000,
+                    retry_options=types.HttpRetryOptions(attempts=1)
+                )
+                self.client = genai.Client(api_key=self.api_key, http_options=http_opts)
             except Exception as e:
                 logger.error(f"Failed to initialize AI Client: {e}")
 
