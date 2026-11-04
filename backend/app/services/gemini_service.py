@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 # Fallback models in priority order
 FALLBACK_MODELS = [
     GEMINI_MODEL,
-    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
     "gemini-3.8-flash",
-    "gemini-flash-latest"
+    "gemini-3.5-flash-lite"
 ]
 
 def extract_text_safely(response: Any) -> Optional[str]:
@@ -50,6 +50,7 @@ class GeminiService:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or GEMINI_API_KEY
         self.client = None
+        self._cache: Dict[str, Any] = {}
         if self.api_key:
             try:
                 self.client = genai.Client(api_key=self.api_key)
@@ -61,56 +62,117 @@ class GeminiService:
 
     def generate_json(self, prompt: str) -> Optional[Dict[str, Any]]:
         """
-        Calls AI model to generate structured JSON output.
+        Calls AI model to generate structured JSON output with low latency.
         Returns parsed dict or None on failure.
         """
         if not self.is_available():
             return None
 
-        # Clean prompt
+        cache_key = f"json:{hash(prompt)}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
         unique_models = list(dict.fromkeys(FALLBACK_MODELS))
         for model in unique_models:
+            # Models that support thinking_budget=0
+            supports_budget = "flash-lite" not in model
+            if supports_budget:
+                try:
+                    config = types.GenerateContentConfig(
+                        temperature=0.1,
+                        max_output_tokens=350,
+                        response_mime_type="application/json",
+                        thinking_config=types.ThinkingConfig(thinking_budget=0)
+                    )
+                    response = self.client.models.generate_content(
+                        model=model,
+                        contents=prompt,
+                        config=config
+                    )
+                    raw_text = extract_text_safely(response)
+                    if raw_text:
+                        if raw_text.startswith("```"):
+                            raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
+                            raw_text = re.sub(r"\s*```$", "", raw_text)
+                        parsed = json.loads(raw_text)
+                        self._cache[cache_key] = parsed
+                        return parsed
+                except Exception as e:
+                    logger.debug(f"Budget=0 JSON config failed on {model}: {e}")
+
+            # Standard config without thinking_budget
             try:
+                config = types.GenerateContentConfig(
+                    temperature=0.1,
+                    max_output_tokens=350,
+                    response_mime_type="application/json"
+                )
                 response = self.client.models.generate_content(
                     model=model,
                     contents=prompt,
-                    config=types.GenerateContentConfig(
-                        temperature=0.1,
-                        response_mime_type="application/json"
-                    )
+                    config=config
                 )
                 raw_text = extract_text_safely(response)
                 if raw_text:
                     if raw_text.startswith("```"):
                         raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
                         raw_text = re.sub(r"\s*```$", "", raw_text)
-                    return json.loads(raw_text)
+                    parsed = json.loads(raw_text)
+                    self._cache[cache_key] = parsed
+                    return parsed
             except Exception as e:
                 logger.warning(f"AI generate_json failed with model {model}: {e}")
                 continue
 
         return None
 
-    def generate_text(self, prompt: str) -> Optional[str]:
+    def generate_text(self, prompt: str, max_tokens: int = 350) -> Optional[str]:
         """
-        Calls AI model to generate free-form text.
+        Calls AI model to generate free-form text with low latency.
         Returns generated string or None on failure.
         """
         if not self.is_available():
             return None
 
+        cache_key = f"text:{hash(prompt)}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
         unique_models = list(dict.fromkeys(FALLBACK_MODELS))
         for model in unique_models:
+            supports_budget = "flash-lite" not in model
+            if supports_budget:
+                try:
+                    config = types.GenerateContentConfig(
+                        temperature=0.2,
+                        max_output_tokens=max_tokens,
+                        thinking_config=types.ThinkingConfig(thinking_budget=0)
+                    )
+                    response = self.client.models.generate_content(
+                        model=model,
+                        contents=prompt,
+                        config=config
+                    )
+                    raw_text = extract_text_safely(response)
+                    if raw_text:
+                        self._cache[cache_key] = raw_text
+                        return raw_text
+                except Exception as e:
+                    logger.debug(f"Budget=0 text config failed on {model}: {e}")
+
             try:
+                config = types.GenerateContentConfig(
+                    temperature=0.2,
+                    max_output_tokens=max_tokens
+                )
                 response = self.client.models.generate_content(
                     model=model,
                     contents=prompt,
-                    config=types.GenerateContentConfig(
-                        temperature=0.3
-                    )
+                    config=config
                 )
                 raw_text = extract_text_safely(response)
                 if raw_text:
+                    self._cache[cache_key] = raw_text
                     return raw_text
             except Exception as e:
                 logger.warning(f"AI generate_text failed with model {model}: {e}")

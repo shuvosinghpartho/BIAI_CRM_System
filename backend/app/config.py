@@ -15,7 +15,7 @@ for p in env_paths:
         break
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-# Default model name is easily swappable here
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+# gemini-3.5-flash with thinking_budget=0 delivers ~1.5s ultra-fast generation
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 FOLLOWUP_HOURS = int(os.getenv("FOLLOWUP_HOURS", "48"))
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./crm.db")

@@ -53,7 +53,7 @@ export default {
   getOverdue() {
     return api.get('/api/reports/overdue')
   },
-  getWeeklySummary() {
-    return api.get('/api/reports/weekly-summary')
+  getWeeklySummary(refresh = false) {
+    return api.get('/api/reports/weekly-summary', { params: { refresh } })
   }
 }

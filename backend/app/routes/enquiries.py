@@ -7,6 +7,7 @@ from sqlalchemy import desc
 from app.database import get_db
 from app.models import Enquiry
 from app.schemas import EnquiryCreate, EnquiryUpdate, EnquiryResponse
+from app.services.summary_service import invalidate_summary_cache
 
 router = APIRouter(prefix="/api/enquiries", tags=["enquiries"])
 
@@ -20,6 +21,7 @@ def create_enquiry(payload: EnquiryCreate, db: Session = Depends(get_db)):
     db.add(enquiry)
     db.commit()
     db.refresh(enquiry)
+    invalidate_summary_cache()
     return enquiry
 
 @router.get("", response_model=List[EnquiryResponse])
@@ -71,6 +73,7 @@ def update_enquiry(enquiry_id: int, payload: EnquiryUpdate, db: Session = Depend
 
     db.commit()
     db.refresh(enquiry)
+    invalidate_summary_cache()
     return enquiry
 
 @router.delete("/{enquiry_id}", status_code=204)
@@ -80,5 +83,6 @@ def delete_enquiry(enquiry_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Enquiry not found")
     db.delete(enquiry)
     db.commit()
+    invalidate_summary_cache()
     return None
 

@@ -22,8 +22,26 @@
       </div>
     </div>
 
+    <!-- Skeleton Loading State -->
+    <div v-if="store.loading" class="cards-grid">
+      <div v-for="n in 4" :key="n" class="other-card card-box">
+        <div class="skeleton-header">
+          <div class="skeleton-avatar skeleton-pulse"></div>
+          <div class="skeleton-meta">
+            <div class="skeleton-line sm skeleton-pulse"></div>
+            <div class="skeleton-line xs skeleton-pulse"></div>
+          </div>
+        </div>
+        <div class="skeleton-line full skeleton-pulse"></div>
+        <div class="skeleton-line md skeleton-pulse"></div>
+        <div class="skeleton-footer">
+          <div class="skeleton-pill skeleton-pulse"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Enquiries Cards Grid -->
-    <div v-if="filteredList.length > 0" class="cards-grid">
+    <div v-else-if="filteredList.length > 0" class="cards-grid">
       <div
         v-for="item in filteredList"
         :key="item.id"
@@ -105,44 +123,50 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useEnquiriesStore } from '../stores/enquiries'
-import ReplyBox from '../components/ReplyBox.vue'
 import DetailModal from '../components/DetailModal.vue'
+import ReplyBox from '../components/ReplyBox.vue'
 import { formatDate, getChannelBadgeClass } from '../utils/format'
 
 const store = useEnquiriesStore()
+
 const currentTab = ref('all')
 const activeReplyId = ref(null)
 
 const typeTabs = [
   { label: 'All Non-Sales', value: 'all' },
-  { label: 'Support', value: 'support' },
+  { label: 'Support Tickets', value: 'support' },
   { label: 'Job Seekers', value: 'job_seeker' },
-  { label: 'Spam', value: 'spam' }
+  { label: 'Spam Filtered', value: 'spam' }
 ]
-
-onMounted(() => {
-  store.fetchAll()
-})
-
-const filteredList = computed(() => {
-  const others = store.otherEnquiries
-  if (currentTab.value === 'all') return others
-  return others.filter(e => e.enquiry_type === currentTab.value)
-})
 
 function getTabCount(type) {
   if (type === 'all') return store.otherEnquiries.length
   return store.otherEnquiries.filter(e => e.enquiry_type === type).length
 }
 
+const filteredList = computed(() => {
+  if (currentTab.value === 'all') {
+    return store.otherEnquiries
+  }
+  return store.otherEnquiries.filter(e => e.enquiry_type === currentTab.value)
+})
+
 function formatType(type) {
-  if (type === 'job_seeker') return 'Job Seeker'
-  return type ? type.toUpperCase() : 'OTHER'
+  switch (type) {
+    case 'support': return 'Support'
+    case 'job_seeker': return 'Job Seeker'
+    case 'spam': return 'Spam'
+    default: return type
+  }
 }
 
-function openModal(enquiry) {
-  store.openDetailModal(enquiry)
+function openModal(item) {
+  store.openDetailModal(item)
 }
+
+onMounted(() => {
+  store.fetchAll()
+})
 </script>
 
 <style scoped>
@@ -155,8 +179,8 @@ function openModal(enquiry) {
 
 .view-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -171,6 +195,7 @@ function openModal(enquiry) {
 .view-subtitle {
   font-size: 0.85rem;
   color: var(--text-muted);
+  margin-top: 0.2rem;
 }
 
 .type-filter-tabs {
@@ -178,95 +203,80 @@ function openModal(enquiry) {
   gap: 0.4rem;
   background: var(--bg-surface-elevated);
   padding: 0.3rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+  flex-wrap: wrap;
 }
 
 .tab-btn {
-  padding: 0.35rem 0.95rem;
-  border-radius: var(--radius-full);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-muted);
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.45rem;
   transition: all 0.15s;
 }
 
-.tab-btn.active {
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: #ffffff;
-  box-shadow: 0 2px 8px var(--primary-glow);
-}
-
-.tab-count {
-  background: var(--border-color);
-  padding: 0.1rem 0.45rem;
-  border-radius: var(--radius-full);
-  font-size: 0.725rem;
+.tab-btn:hover {
   color: var(--text-main);
 }
 
-.tab-btn.active .tab-count {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+.tab-btn.active {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-count {
+  font-size: 0.7rem;
+  background: var(--bg-surface-elevated);
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
 }
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.15rem;
 }
 
 .other-card {
-  padding: 1.25rem;
+  padding: 1.15rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   cursor: pointer;
-  border-radius: var(--radius-md);
+  border-left: 3px solid var(--border-color);
+  transition: all 0.2s ease;
 }
 
 .other-card:hover {
   transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
 }
 
 .other-card.type-support {
-  border-left: 4px solid var(--warning);
+  border-left-color: #3b82f6;
 }
 
 .other-card.type-job_seeker {
-  border-left: 4px solid #a855f7;
+  border-left-color: #10b981;
 }
 
 .other-card.type-spam {
-  border-left: 4px solid var(--danger);
-  opacity: 0.85;
-}
-
-.badge-support {
-  background-color: var(--warning-bg);
-  color: var(--warning);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.badge-job_seeker {
-  background-color: rgba(168, 85, 247, 0.15);
-  color: #a855f7;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.badge-spam {
-  background-color: var(--danger-bg);
-  color: var(--danger);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-left-color: #ef4444;
+  opacity: 0.75;
 }
 
 .card-header {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 .user-block {
@@ -290,17 +300,17 @@ function openModal(enquiry) {
 }
 
 .user-name {
-  font-size: 0.95rem;
-  font-weight: 800;
+  font-size: 0.925rem;
+  font-weight: 700;
   color: var(--text-main);
 }
 
 .user-phone {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
   font-size: 0.75rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .badges-group {
@@ -308,9 +318,27 @@ function openModal(enquiry) {
   gap: 0.35rem;
 }
 
+.badge-support {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-job_seeker {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-spam {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 .message-bubble {
-  background-color: var(--bg-surface-elevated);
-  padding: 0.75rem 0.85rem;
+  background: var(--bg-surface-elevated);
+  padding: 0.75rem 0.9rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
 }
@@ -319,15 +347,14 @@ function openModal(enquiry) {
   font-size: 0.85rem;
   color: var(--text-main);
   line-height: 1.5;
-  font-style: italic;
+  white-space: pre-wrap;
 }
 
 .card-footer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  border-top: 1px solid var(--border-color);
-  padding-top: 0.5rem;
+  align-items: center;
+  padding-top: 0.35rem;
 }
 
 .date-text {
@@ -336,22 +363,82 @@ function openModal(enquiry) {
 }
 
 .btn-suggest {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--primary);
+  background: var(--primary-light);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
 }
 
 .btn-suggest:hover {
-  text-decoration: underline;
+  background: var(--primary);
+  color: #fff;
+}
+
+.reply-toggle-area {
+  margin-top: 0.5rem;
 }
 
 .empty-state {
-  text-align: center;
-  padding: 4rem 1rem;
-  color: var(--text-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
   gap: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Skeleton styling */
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.skeleton-line {
+  height: 10px;
+  border-radius: 4px;
+}
+
+.skeleton-line.xs { width: 40%; height: 8px; }
+.skeleton-line.sm { width: 60%; }
+.skeleton-line.md { width: 85%; }
+.skeleton-line.full { width: 100%; }
+
+.skeleton-footer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.skeleton-pill {
+  width: 80px;
+  height: 20px;
+  border-radius: 9999px;
 }
 </style>

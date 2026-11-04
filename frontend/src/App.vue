@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <!-- Sidebar Navigation -->
+    <!-- Desktop Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="logo-badge">
@@ -8,7 +8,7 @@
         </div>
         <div>
           <div class="brand-title">BIAI<span class="brand-tag">CRM</span></div>
-          <div class="brand-subtitle">Admissions & Pipeline Intelligence</div>
+          <div class="brand-subtitle">Admissions & Lead Intelligence</div>
         </div>
       </div>
 
@@ -20,17 +20,18 @@
               <path d="M3 9h18"/>
               <path d="M9 21V9"/>
             </svg>
-            Pipeline Board
+            <span>Pipeline Board</span>
           </RouterLink>
         </li>
 
         <li class="nav-item">
           <RouterLink to="/add">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 5v14"/>
-              <path d="M5 12h14"/>
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
-            Add Enquiry
+            <span>Add Enquiry</span>
           </RouterLink>
         </li>
 
@@ -40,7 +41,7 @@
               <rect width="20" height="16" x="2" y="4" rx="2"/>
               <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
             </svg>
-            Other Enquiries
+            <span>Other Enquiries</span>
             <span v-if="otherCount > 0" class="nav-badge">{{ otherCount }}</span>
           </RouterLink>
         </li>
@@ -51,7 +52,7 @@
               <path d="M3 3v18h18"/>
               <path d="m19 9-5 5-4-4-3 3"/>
             </svg>
-            Weekly Summary
+            <span>Weekly Summary</span>
             <span v-if="overdueCount > 0" class="nav-badge danger">{{ overdueCount }}</span>
           </RouterLink>
         </li>
@@ -68,9 +69,15 @@
     <!-- Main Content Area -->
     <div class="main-content">
       <header class="top-bar">
-        <div>
-          <h1 class="page-title">{{ currentRouteTitle }}</h1>
-          <p class="page-description">{{ currentRouteDesc }}</p>
+        <div class="top-bar-left">
+          <div class="mobile-brand-pill">
+            <div class="logo-badge mini"><span>B</span></div>
+            <strong>BIAI CRM</strong>
+          </div>
+          <div>
+            <h1 class="page-title">{{ currentRouteTitle }}</h1>
+            <p class="page-description">{{ currentRouteDesc }}</p>
+          </div>
         </div>
 
         <div class="top-bar-right">
@@ -104,7 +111,7 @@
 
           <div class="top-bar-stats">
             <div class="stat-chip">
-              <span>Sales Leads:</span>
+              <span>Leads:</span>
               <strong>{{ store.salesEnquiries.length }}</strong>
             </div>
             <div v-if="overdueCount > 0" class="stat-chip overdue">
@@ -119,6 +126,49 @@
         <RouterView />
       </main>
     </div>
+
+    <!-- Mobile Bottom Navigation Dock -->
+    <nav class="mobile-bottom-dock">
+      <RouterLink to="/" class="dock-item" :class="{ active: route.name === 'pipeline' }">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2"/>
+          <path d="M3 9h18"/>
+          <path d="M9 21V9"/>
+        </svg>
+        <span>Pipeline</span>
+      </RouterLink>
+
+      <RouterLink to="/add" class="dock-item" :class="{ active: route.name === 'add-enquiry' }">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <span>Add Lead</span>
+      </RouterLink>
+
+      <RouterLink to="/other" class="dock-item" :class="{ active: route.name === 'other-enquiries' }">
+        <div class="dock-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          <span v-if="otherCount > 0" class="dock-badge">{{ otherCount }}</span>
+        </div>
+        <span>Other</span>
+      </RouterLink>
+
+      <RouterLink to="/summary" class="dock-item" :class="{ active: route.name === 'summary' }">
+        <div class="dock-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v18h18"/>
+            <path d="m19 9-5 5-4-4-3 3"/>
+          </svg>
+          <span v-if="overdueCount > 0" class="dock-badge danger">{{ overdueCount }}</span>
+        </div>
+        <span>Summary</span>
+      </RouterLink>
+    </nav>
 
     <!-- Floating Global Toasts -->
     <div class="toast-container">
@@ -136,9 +186,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute, RouterLink, RouterView } from 'vue-router'
 import { useEnquiriesStore } from './stores/enquiries'
+import { setDynamicFavicon, updatePageMeta } from './utils/dynamicFavicon'
 
 const route = useRoute()
 const store = useEnquiriesStore()
@@ -166,6 +217,20 @@ const currentRouteDesc = computed(() => {
   }
 })
 
+// Dynamic Favicon and Page Meta Sync
+watch(
+  [() => route.path, () => store.overdueCount, () => store.salesEnquiries.length, () => store.otherEnquiries.length],
+  () => {
+    setDynamicFavicon(route.path, store.overdueCount)
+    updatePageMeta(route.name, {
+      overdueCount: store.overdueCount,
+      salesCount: store.salesEnquiries.length,
+      otherCount: store.otherEnquiries.length
+    })
+  },
+  { immediate: true }
+)
+
 onMounted(() => {
   store.initTheme()
   store.fetchAll()
@@ -177,5 +242,105 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mobile-brand-pill {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-badge.mini {
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
+}
+
+/* Mobile Bottom Navigation Dock */
+.mobile-bottom-dock {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  align-items: center;
+  justify-content: space-around;
+  z-index: 900;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: all 0.15s;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.dock-item.active {
+  color: var(--primary);
+}
+
+.dock-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.dock-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.1rem 0.35rem;
+  border-radius: 9999px;
+  line-height: 1;
+}
+
+.dock-badge.danger {
+  background: var(--danger);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .mobile-brand-pill {
+    display: flex;
+  }
+
+  .mobile-bottom-dock {
+    display: flex;
+  }
+
+  .main-content {
+    padding-bottom: 65px;
+  }
+
+  .page-description {
+    display: none;
+  }
+
+  .page-title {
+    font-size: 1.1rem;
+  }
 }
 </style>

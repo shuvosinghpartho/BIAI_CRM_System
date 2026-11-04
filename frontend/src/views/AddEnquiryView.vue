@@ -2,7 +2,7 @@
   <div class="add-enquiry-view">
     <div class="page-container">
       <!-- Step 1 Card: AI Message Extraction -->
-      <div class="card-box">
+      <div class="card-box step-card">
         <div class="card-box-header">
           <div class="header-icon-box">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -49,14 +49,14 @@
               <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
               </svg>
-              <span>{{ extracting ? 'Analyzing message with AI...' : 'Analyze with AI' }}</span>
+              <span>{{ extracting ? 'Analyzing message with AI...' : 'Auto-fill with AI' }}</span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- Step 2 Card: Review & Save Enquiry Form -->
-      <div class="card-box">
+      <div class="card-box step-card">
         <div class="card-box-header">
           <div class="header-icon-box green">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -129,26 +129,38 @@ const extractedData = ref({
 async function handleExtract() {
   if (!rawMessage.value.trim()) return
   extracting.value = true
+  generatingReply.value = true
   saveSuccess.value = false
 
   try {
-    const res = await api.extract({
-      message: rawMessage.value,
-      source: incomingSource.value
-    })
+    // Run extract and reply concurrently in parallel to cut wait time in half
+    const [extractRes, replyRes] = await Promise.all([
+      api.extract({
+        message: rawMessage.value,
+        source: incomingSource.value
+      }),
+      api.suggestReply({
+        message: rawMessage.value
+      })
+    ])
 
-    extractedData.value = {
-      name: res.data.name || '',
-      phone: res.data.phone || '',
-      source: res.data.source || incomingSource.value,
-      interest: res.data.interest || 'unknown',
-      enquiry_type: res.data.enquiry_type || 'sales',
-      language: res.data.language || 'banglish',
-      message: rawMessage.value
+    if (extractRes && extractRes.data) {
+      extractedData.value = {
+        name: extractRes.data.name || '',
+        phone: extractRes.data.phone || '',
+        source: extractRes.data.source || incomingSource.value,
+        interest: extractRes.data.interest || 'unknown',
+        enquiry_type: extractRes.data.enquiry_type || 'sales',
+        language: extractRes.data.language || 'banglish',
+        message: rawMessage.value
+      }
+    }
+
+    if (replyRes && replyRes.data) {
+      suggestedReply.value = replyRes.data.reply
     }
 
     store.showToast('Fields extracted from message!', 'success')
-    generateReply()
   } catch (err) {
     console.error("Extraction error:", err)
     extractedData.value.message = rawMessage.value
@@ -156,23 +168,6 @@ async function handleExtract() {
     store.showToast('Processed using rules.', 'info')
   } finally {
     extracting.value = false
-  }
-}
-
-async function generateReply() {
-  generatingReply.value = true
-  try {
-    const res = await api.suggestReply({
-      message: extractedData.value.message,
-      name: extractedData.value.name,
-      interest: extractedData.value.interest,
-      enquiry_type: extractedData.value.enquiry_type,
-      language: extractedData.value.language
-    })
-    suggestedReply.value = res.data.reply
-  } catch (err) {
-    console.error("Reply generation error:", err)
-  } finally {
     generatingReply.value = false
   }
 }
@@ -201,35 +196,40 @@ async function handleSave(formData) {
 }
 
 .page-container {
-  max-width: 900px;
+  max-width: 820px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
+.step-card {
+  padding: 1.5rem;
+}
+
 .card-box-header {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 1rem;
   margin-bottom: 1.25rem;
 }
 
 .header-icon-box {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
-  background: var(--primary-light);
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 12px var(--primary-glow);
   flex-shrink: 0;
 }
 
 .header-icon-box.green {
-  background: var(--success-bg);
-  color: var(--success);
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
 }
 
 .card-box-title {
@@ -243,11 +243,17 @@ async function handleSave(formData) {
   color: var(--text-muted);
 }
 
+.paste-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .channel-select-bar {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
 }
 
 .bar-label {
@@ -259,20 +265,20 @@ async function handleSave(formData) {
 .channel-chips {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .chip-label {
+  display: inline-flex;
+  align-items: center;
   padding: 0.35rem 0.85rem;
-  border-radius: var(--radius-full);
+  background-color: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
-  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-full);
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   transition: all 0.15s ease;
 }
 
@@ -281,30 +287,26 @@ async function handleSave(formData) {
 }
 
 .chip-label.selected {
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: #ffffff;
+  background: var(--primary);
+  color: #fff;
   border-color: var(--primary);
-  box-shadow: 0 2px 8px var(--primary-glow);
-}
-
-.capitalize {
-  text-transform: capitalize;
 }
 
 .raw-textarea {
   width: 100%;
-  padding: 0.95rem;
+  padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--input-border);
-  font-size: 0.925rem;
-  color: var(--input-text);
   background-color: var(--input-bg);
-  resize: vertical;
+  color: var(--input-text);
+  font-size: 0.925rem;
   line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: all 0.2s;
 }
 
 .raw-textarea:focus {
-  outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
@@ -312,33 +314,19 @@ async function handleSave(formData) {
 .paste-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 0.85rem;
-}
-
-.spinner-sm {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 .success-banner {
-  background-color: var(--success-bg);
-  border: 1px solid rgba(34, 197, 94, 0.4);
+  margin-top: 1.25rem;
+  padding: 0.85rem 1.15rem;
+  background: var(--success-bg);
+  border: 1px solid rgba(16, 185, 129, 0.4);
   color: var(--success);
-  padding: 0.85rem 1.25rem;
   border-radius: var(--radius-md);
-  margin-top: 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
@@ -346,5 +334,6 @@ async function handleSave(formData) {
   margin-left: auto;
   color: var(--success);
   text-decoration: underline;
+  font-weight: 800;
 }
 </style>

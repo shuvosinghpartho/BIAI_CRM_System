@@ -40,14 +40,41 @@
           </button>
         </div>
 
-        <RouterLink to="/add" class="btn-primary">
+        <!-- Single Window Quick Add CTA -->
+        <button
+          type="button"
+          class="btn-primary"
+          @click="showQuickAddModal = true"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          New Lead
-        </RouterLink>
+          <span>Quick Add Lead</span>
+        </button>
       </div>
+    </div>
+
+    <!-- Mobile Column Switcher (Visible on small screens) -->
+    <div class="mobile-column-tabs">
+      <button
+        type="button"
+        class="tab-btn"
+        :class="{ active: activeMobileTab === 'all' }"
+        @click="activeMobileTab = 'all'"
+      >
+        All ({{ store.filteredSalesEnquiries.length }})
+      </button>
+      <button
+        v-for="status in columns"
+        :key="status"
+        type="button"
+        class="tab-btn"
+        :class="{ active: activeMobileTab === status }"
+        @click="activeMobileTab = status"
+      >
+        {{ status }} ({{ (store.pipelineColumns[status] || []).length }})
+      </button>
     </div>
 
     <!-- Overdue Alert Banner if overdue enquiries exist -->
@@ -61,7 +88,7 @@
           </svg>
         </div>
         <span>
-          <strong>Follow-up Alert:</strong> {{ store.overdueCount }} active leads have had no contact for over 48 hours.
+          <strong>Follow-up SLA Alert:</strong> {{ store.overdueCount }} active leads have had no contact for over 48 hours.
         </span>
       </div>
       <RouterLink to="/summary" class="banner-link">
@@ -71,31 +98,42 @@
 
     <!-- 5-Column Pipeline Board -->
     <div class="pipeline-board">
-      <PipelineColumn
-        v-for="status in columns"
-        :key="status"
-        :status="status"
-        :enquiries="store.pipelineColumns[status] || []"
-      />
+      <template v-for="status in visibleColumns" :key="status">
+        <PipelineColumn
+          :status="status"
+          :enquiries="store.pipelineColumns[status] || []"
+          :loading="store.loading"
+        />
+      </template>
     </div>
 
-    <!-- Slide-over Detail Modal -->
+    <!-- Slide-over / Modal Detail View -->
     <DetailModal
       v-if="store.activeModalEnquiry"
       :enquiry="store.activeModalEnquiry"
       @close="store.closeDetailModal"
     />
+
+    <!-- Quick Add Single-Window Modal -->
+    <QuickAddModal
+      v-if="showQuickAddModal"
+      @close="showQuickAddModal = false"
+      @saved="store.fetchAll"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useEnquiriesStore } from '../stores/enquiries'
 import PipelineColumn from '../components/PipelineColumn.vue'
 import DetailModal from '../components/DetailModal.vue'
+import QuickAddModal from '../components/QuickAddModal.vue'
 
 const store = useEnquiriesStore()
+const showQuickAddModal = ref(false)
+const activeMobileTab = ref('all')
 
 const columns = ['New', 'Contacted', 'Interested', 'Paid', 'Lost']
 
@@ -106,6 +144,13 @@ const channels = [
   { label: 'Website', value: 'website' },
   { label: 'Phone', value: 'phone' }
 ]
+
+const visibleColumns = computed(() => {
+  if (activeMobileTab.value === 'all') {
+    return columns
+  }
+  return [activeMobileTab.value]
+})
 
 onMounted(() => {
   store.fetchAll()
@@ -134,6 +179,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .filter-label {
@@ -145,6 +191,7 @@ onMounted(() => {
 .channel-pills {
   display: flex;
   gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .pill-btn {
@@ -156,6 +203,7 @@ onMounted(() => {
   background-color: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
   transition: all 0.15s ease;
+  cursor: pointer;
 }
 
 .pill-btn:hover {
@@ -174,6 +222,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  flex-wrap: wrap;
 }
 
 .search-input-wrapper {
@@ -193,7 +242,7 @@ onMounted(() => {
   border-radius: var(--radius-md);
   border: 1px solid var(--input-border);
   font-size: 0.85rem;
-  width: 240px;
+  width: 220px;
   outline: none;
   background-color: var(--input-bg);
   color: var(--input-text);
@@ -202,16 +251,46 @@ onMounted(() => {
 
 .search-input:focus {
   border-color: var(--primary);
-  width: 280px;
+  width: 260px;
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .clear-search {
   position: absolute;
   right: 0.65rem;
+  background: none;
+  border: none;
   font-size: 1.15rem;
   color: var(--text-muted);
+  cursor: pointer;
   line-height: 1;
+}
+
+/* Mobile column tabs */
+.mobile-column-tabs {
+  display: none;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+}
+
+.tab-btn {
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
 }
 
 .overdue-alert-banner {
@@ -235,6 +314,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .banner-left {
@@ -247,6 +327,7 @@ onMounted(() => {
   color: var(--danger);
   font-weight: 800;
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 .pipeline-board {
@@ -255,5 +336,27 @@ onMounted(() => {
   overflow-x: auto;
   padding-bottom: 1.25rem;
   flex: 1;
+}
+
+@media (max-width: 900px) {
+  .mobile-column-tabs {
+    display: flex;
+  }
+
+  .pipeline-board {
+    overflow-x: hidden;
+  }
+
+  .pipeline-view {
+    padding: 1rem;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .search-input:focus {
+    width: 100%;
+  }
 }
 </style>

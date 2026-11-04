@@ -5,7 +5,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
           <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
         </svg>
-        <span class="title">Suggested Response</span>
+        <span class="title">Suggested AI Response</span>
         <span v-if="language" class="lang-pill">{{ language.toUpperCase() }}</span>
       </div>
       <div class="header-actions">
@@ -29,8 +29,14 @@
     </div>
 
     <div v-if="loading" class="reply-loading">
-      <div class="spinner"></div>
-      <span>Drafting tailored AI response...</span>
+      <div class="reply-loading-top">
+        <div class="spinner-sm"></div>
+        <span>Synthesizing tailored AI response...</span>
+      </div>
+      <div class="skeleton-lines">
+        <div class="skeleton-line full skeleton-pulse"></div>
+        <div class="skeleton-line md skeleton-pulse"></div>
+      </div>
     </div>
 
     <div v-else-if="replyText" class="reply-body">
@@ -43,7 +49,7 @@
     </div>
 
     <div v-else class="reply-empty">
-      <p>No response generated yet. Click "Generate Suggested Reply" or "Extract with AI" above.</p>
+      <p>No response generated yet. Click "Auto-fill with AI" or paste a message above.</p>
     </div>
   </div>
 </template>
@@ -172,25 +178,28 @@ async function copyReply() {
 
 .reply-loading {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.75rem;
-  padding: 1.5rem;
+  padding: 1.25rem;
   color: var(--text-muted);
-  font-size: 0.875rem;
-  justify-content: center;
+  font-size: 0.85rem;
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-sm);
 }
 
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border-color);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.reply-loading-top {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .reply-body {

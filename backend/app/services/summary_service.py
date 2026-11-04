@@ -1,8 +1,9 @@
 import json
 import logging
-from datetime import datetime, timedelta
+import time
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
 
 from app.models import Enquiry
@@ -13,11 +14,27 @@ logger = logging.getLogger(__name__)
 
 PROMPT_FILE = Path(__file__).resolve().parent.parent / "prompts" / "weekly_summary.txt"
 
-def generate_weekly_summary(db: Session) -> Dict[str, Any]:
+# In-memory cache for weekly summary
+_summary_cache: Dict[str, Any] = {
+    "timestamp": 0.0,
+    "data": None
+}
+
+def invalidate_summary_cache():
+    """Call when an enquiry is added or updated so next summary reflects changes."""
+    _summary_cache["timestamp"] = 0.0
+    _summary_cache["data"] = None
+
+def generate_weekly_summary(db: Session, force_refresh: bool = False) -> Dict[str, Any]:
     """
-    Compiles past 7 days of enquiry data and generates an AI summary.
-    Falls back to a structured template if Gemini is unavailable.
+    Compiles enquiry metrics and generates an AI summary.
+    Caches the summary for 10 minutes so page transitions are instantaneous.
+    Falls back to a structured template if AI service is unavailable.
     """
+    current_time = time.time()
+    if not force_refresh and _summary_cache["data"] and (current_time - _summary_cache["timestamp"] < 600):
+        return _summary_cache["data"]
+
     enquiries = db.query(Enquiry).all()
     overdue_list = get_overdue_enquiries(db)
 
@@ -43,7 +60,7 @@ def generate_weekly_summary(db: Session) -> Dict[str, Any]:
         "type_breakdown": by_type,
     }
 
-    # Format textual prompt for Gemini
+    # Format textual prompt
     data_context = (
         f"Total Enquiries: {total}\n"
         f"Overdue Follow-ups (>48h): {len(overdue_list)}\n"
@@ -60,7 +77,7 @@ def generate_weekly_summary(db: Session) -> Dict[str, Any]:
         try:
             template = PROMPT_FILE.read_text(encoding="utf-8")
             prompt = template.format(enquiries_summary=data_context)
-            ai_report = gemini_service.generate_text(prompt)
+            ai_report = gemini_service.generate_text(prompt, max_tokens=500)
         except Exception as e:
             logger.warning(f"Failed to generate AI weekly summary: {e}")
 
@@ -90,9 +107,12 @@ def generate_weekly_summary(db: Session) -> Dict[str, Any]:
 3. Schedule direct calls with corporate leads to finalize bespoke B2B contracts.
 """
 
-    return {
+    result = {
         "stats": summary_stats,
         "ai_summary": ai_report,
         "generated_at": datetime.utcnow().isoformat()
     }
 
+    _summary_cache["timestamp"] = current_time
+    _summary_cache["data"] = result
+    return result

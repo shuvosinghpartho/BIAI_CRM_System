@@ -3,6 +3,7 @@ import PipelineView from '../views/PipelineView.vue'
 import AddEnquiryView from '../views/AddEnquiryView.vue'
 import OtherEnquiriesView from '../views/OtherEnquiriesView.vue'
 import SummaryView from '../views/SummaryView.vue'
+import { setDynamicFavicon } from '../utils/dynamicFavicon'
 
 const routes = [
   {
@@ -36,5 +37,8 @@ const router = createRouter({
   routes
 })
 
-export default router
+router.afterEach((to) => {
+  setDynamicFavicon(to.path, 0)
+})
 
+export default router

@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -17,9 +17,12 @@ def get_overdue_reports(db: Session = Depends(get_db)):
     return get_overdue_enquiries(db)
 
 @router.get("/weekly-summary")
-def get_weekly_summary_report(db: Session = Depends(get_db)):
+def get_weekly_summary_report(
+    refresh: bool = Query(False, description="Force AI re-generation ignoring cache"),
+    db: Session = Depends(get_db)
+):
     """
     Returns an AI-generated weekly CRM summary along with metrics.
+    Cached for instant performance unless refresh=true is passed.
     """
-    return generate_weekly_summary(db)
-
+    return generate_weekly_summary(db, force_refresh=refresh)

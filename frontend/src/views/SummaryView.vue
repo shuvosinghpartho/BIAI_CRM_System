@@ -10,43 +10,53 @@
         type="button"
         class="btn-secondary"
         :disabled="loadingSummary"
-        @click="fetchSummary"
+        @click="fetchSummary(true)"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <div v-if="loadingSummary" class="spinner-sm"></div>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
           <path d="M21 3v5h-5"/>
           <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
           <path d="M8 16H3v5"/>
         </svg>
-        <span>{{ loadingSummary ? 'Compiling Report...' : 'Refresh Report' }}</span>
+        <span>{{ loadingSummary ? 'Synthesizing AI Summary...' : 'Regenerate AI Summary' }}</span>
       </button>
     </div>
 
     <!-- 4 Key Metric Cards -->
     <div class="metrics-grid">
-      <div class="metric-card card-box">
-        <span class="metric-label">Total Enquiries</span>
-        <span class="metric-value">{{ stats.total_enquiries || 0 }}</span>
-        <span class="metric-hint">Across all 4 channels</span>
-      </div>
+      <template v-if="loadingSummary && !stats.total_enquiries">
+        <div v-for="n in 4" :key="n" class="metric-card card-box skeleton-box">
+          <div class="skeleton-line sm skeleton-pulse"></div>
+          <div class="skeleton-line full skeleton-pulse" style="height: 32px; margin: 0.5rem 0;"></div>
+          <div class="skeleton-line xs skeleton-pulse"></div>
+        </div>
+      </template>
+      <template v-else>
+        <div class="metric-card card-box">
+          <span class="metric-label">Total Enquiries</span>
+          <span class="metric-value">{{ stats.total_enquiries || store.enquiries.length }}</span>
+          <span class="metric-hint">Across all 4 channels</span>
+        </div>
 
-      <div class="metric-card card-box alert">
-        <span class="metric-label">Overdue Leads (>48h)</span>
-        <span class="metric-value text-red">{{ overdueList.length }}</span>
-        <span class="metric-hint">Awaiting response follow-up</span>
-      </div>
+        <div class="metric-card card-box alert">
+          <span class="metric-label">Overdue Leads (>48h)</span>
+          <span class="metric-value text-red">{{ overdueList.length }}</span>
+          <span class="metric-hint">Awaiting response follow-up</span>
+        </div>
 
-      <div class="metric-card card-box">
-        <span class="metric-label">Top Demand Track</span>
-        <span class="metric-value capitalize">{{ topTrack }}</span>
-        <span class="metric-hint">Highest enquiry volume</span>
-      </div>
+        <div class="metric-card card-box">
+          <span class="metric-label">Top Demand Track</span>
+          <span class="metric-value capitalize">{{ topTrack }}</span>
+          <span class="metric-hint">Highest enquiry volume</span>
+        </div>
 
-      <div class="metric-card card-box">
-        <span class="metric-label">Primary Channel</span>
-        <span class="metric-value capitalize">{{ topChannel }}</span>
-        <span class="metric-hint">Most active lead source</span>
-      </div>
+        <div class="metric-card card-box">
+          <span class="metric-label">Primary Channel</span>
+          <span class="metric-value capitalize">{{ topChannel }}</span>
+          <span class="metric-hint">Most active lead source</span>
+        </div>
+      </template>
     </div>
 
     <!-- Two-Column Layout -->
@@ -66,8 +76,17 @@
         </div>
 
         <div v-if="loadingSummary" class="loading-state">
-          <div class="spinner"></div>
-          <span>Compiling performance insights and channel analytics...</span>
+          <div class="spinner-large"></div>
+          <div class="loading-pulse-text">
+            <h4>Synthesizing Executive Performance Insights</h4>
+            <p>Aggregating conversion rates, channel volume, and lead response SLA...</p>
+          </div>
+          <div class="shimmer-lines">
+            <div class="skeleton-line full skeleton-pulse"></div>
+            <div class="skeleton-line md skeleton-pulse"></div>
+            <div class="skeleton-line full skeleton-pulse"></div>
+            <div class="skeleton-line sm skeleton-pulse"></div>
+          </div>
         </div>
 
         <div v-else class="report-content">
@@ -86,7 +105,7 @@
             </svg>
             <h3 class="report-title">Leads Requiring Immediate Action ({{ overdueList.length }})</h3>
           </div>
-          <span class="overdue-badge-pill">>48 Hours</span>
+          <span class="overdue-badge-pill">>48 Hours SLA</span>
         </div>
 
         <div v-if="overdueList.length > 0" class="overdue-items">
@@ -121,12 +140,14 @@
         </div>
 
         <div v-else class="empty-overdue">
-          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-          </svg>
+          <div class="empty-icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
           <h4>No Overdue Leads!</h4>
-          <p>Great job! All active sales enquiries have been contacted within 48 hours.</p>
+          <p>Great job! All active sales enquiries have been contacted within the 48-hour SLA.</p>
         </div>
       </div>
     </div>
@@ -183,27 +204,36 @@ const formattedSummary = computed(() => {
     .replace(/\n\n/gim, '<br/><br/>')
 })
 
-async function fetchSummary() {
+async function fetchSummary(force = false) {
   loadingSummary.value = true
   try {
-    const res = await api.getWeeklySummary()
+    const res = await api.getWeeklySummary(force)
     rawSummaryText.value = res.data.ai_summary
     stats.value = res.data.stats || {}
     generatedAt.value = res.data.generated_at
+    if (force) {
+      store.showToast('Weekly AI Summary freshly generated!', 'success')
+    }
   } catch (err) {
     rawSummaryText.value = "Failed to load summary. " + err.message
+    store.showToast('Could not load summary: ' + err.message, 'error')
   } finally {
     loadingSummary.value = false
   }
 }
 
 async function handleStatusChange(id, newStatus) {
-  await store.updateStatus(id, newStatus)
+  try {
+    await store.updateStatus(id, newStatus)
+    store.showToast(`Updated status to "${newStatus}"`, 'success')
+  } catch (err) {
+    store.showToast('Status update failed: ' + err.message, 'error')
+  }
 }
 
 onMounted(() => {
+  fetchSummary(false)
   store.fetchAll()
-  fetchSummary()
 })
 </script>
 
@@ -217,8 +247,10 @@ onMounted(() => {
 
 .summary-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .view-title {
@@ -231,89 +263,94 @@ onMounted(() => {
 .view-subtitle {
   font-size: 0.85rem;
   color: var(--text-muted);
+  margin-top: 0.2rem;
 }
 
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
 .metric-card {
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.4rem;
+  border-left: 4px solid var(--primary);
 }
 
 .metric-card.alert {
-  border-left: 4px solid var(--danger);
-  background-color: var(--danger-bg);
+  border-left-color: var(--danger);
+}
+
+.skeleton-box {
+  padding: 1.25rem;
+  gap: 0.6rem;
 }
 
 .metric-label {
-  font-size: 0.775rem;
-  font-weight: 800;
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .metric-value {
-  font-size: 2rem;
-  font-weight: 900;
+  font-size: 1.85rem;
+  font-weight: 800;
   color: var(--text-main);
-  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.metric-value.text-red {
+.text-red {
   color: var(--danger);
 }
 
 .metric-hint {
-  font-size: 0.775rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-}
-
-.capitalize {
-  text-transform: capitalize;
 }
 
 .summary-columns {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 1.5rem;
 }
 
-@media (max-width: 1024px) {
-  .summary-columns {
-    grid-template-columns: 1fr;
-  }
+.ai-report-card,
+.overdue-list-card {
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
 }
 
-.report-header, .overdue-header {
+.report-header,
+.overdue-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.85rem;
   border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.85rem;
 }
 
 .report-header {
-  gap: 0.85rem;
   justify-content: flex-start;
+  gap: 0.85rem;
 }
 
 .report-icon {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
-  background: var(--primary-light);
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 12px var(--primary-glow);
 }
 
 .report-title {
@@ -330,29 +367,88 @@ onMounted(() => {
 .overdue-title-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .overdue-badge-pill {
   background: var(--danger-bg);
   color: var(--danger);
+  font-size: 0.75rem;
   font-weight: 800;
-  font-size: 0.725rem;
   padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 9999px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  gap: 1rem;
+  text-align: center;
+}
+
+.spinner-large {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-pulse-text h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.loading-pulse-text p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.shimmer-lines {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
 }
 
 .report-content {
-  line-height: 1.65;
-  color: var(--text-main);
+  line-height: 1.7;
   font-size: 0.9rem;
+  color: var(--text-main);
 }
 
-.markdown-body :deep(h1), .markdown-body :deep(h2), .markdown-body :deep(h3) {
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3) {
   margin-top: 1rem;
   margin-bottom: 0.4rem;
   color: var(--text-main);
+  font-weight: 800;
+}
+
+.markdown-body :deep(h2) {
+  font-size: 1.15rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3rem;
+}
+
+.markdown-body :deep(h3) {
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.markdown-body :deep(strong) {
+  color: var(--text-main);
+  font-weight: 700;
 }
 
 .markdown-body :deep(li) {
@@ -360,42 +456,20 @@ onMounted(() => {
   margin-bottom: 0.35rem;
 }
 
-.loading-state {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 2.5rem 1rem;
-  color: var(--text-muted);
-  justify-content: center;
-  font-size: 0.9rem;
-}
-
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--border-color);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .overdue-items {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  max-height: 550px;
+  max-height: 520px;
   overflow-y: auto;
 }
 
 .overdue-row-card {
-  border: 1px solid var(--border-color);
   background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--danger);
   border-radius: var(--radius-md);
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -403,42 +477,37 @@ onMounted(() => {
 
 .item-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
 .item-name {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-main);
 }
 
 .item-phone {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
-  font-family: var(--font-mono);
 }
 
 .item-msg {
   font-size: 0.825rem;
-  color: var(--text-main);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  color: var(--text-muted);
+  line-height: 1.45;
   font-style: italic;
 }
 
 .item-footer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding-top: 0.4rem;
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px solid var(--border-color);
 }
 
 .age-text {
-  font-size: 0.75rem;
+  font-size: 0.725rem;
   color: var(--danger);
   font-weight: 700;
 }
@@ -450,30 +519,47 @@ onMounted(() => {
 }
 
 .dropdown-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
 .empty-overdue {
-  text-align: center;
-  padding: 3rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--text-muted);
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.empty-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-overdue h4 {
-  color: var(--success);
+  font-size: 1.05rem;
   font-weight: 800;
+  color: var(--text-main);
 }
 
-.text-danger {
-  color: var(--danger);
+.empty-overdue p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 320px;
 }
 
-.text-success {
-  color: var(--success);
+@media (max-width: 1024px) {
+  .summary-columns {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
