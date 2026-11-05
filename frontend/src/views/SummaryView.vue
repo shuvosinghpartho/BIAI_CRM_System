@@ -748,45 +748,50 @@ onUnmounted(() => {
 }
 
 /* ==========================================================================
-   HIGH-TECH AI LOADING ANIMATION SYSTEM
+   HIGH-TECH AI LOADING ANIMATION SYSTEM (Compact & Elegant)
    ========================================================================== */
 .ai-loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3rem 1.75rem;
-  gap: 1.75rem;
+  padding: 1.85rem 1.25rem;
+  gap: 1.15rem;
   background: radial-gradient(circle at 50% 30%, rgba(225, 29, 72, 0.04) 0%, transparent 70%);
 }
 
 /* Central Neural Orb with Rotating Gyroscope Rings */
 .neural-core-wrapper {
   position: relative;
-  width: 90px;
-  height: 90px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .ai-spark-orb {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), #a855f7);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 24px var(--primary-glow);
+  box-shadow: 0 0 16px var(--primary-glow);
   z-index: 2;
   animation: pulse-core 2s ease-in-out infinite;
 }
 
+.ai-spark-orb svg {
+  width: 18px;
+  height: 18px;
+}
+
 @keyframes pulse-core {
-  0% { transform: scale(0.96); box-shadow: 0 0 16px var(--primary-glow); }
-  50% { transform: scale(1.06); box-shadow: 0 0 32px rgba(225, 29, 72, 0.6); }
-  100% { transform: scale(0.96); box-shadow: 0 0 16px var(--primary-glow); }
+  0% { transform: scale(0.96); box-shadow: 0 0 12px var(--primary-glow); }
+  50% { transform: scale(1.05); box-shadow: 0 0 22px rgba(225, 29, 72, 0.5); }
+  100% { transform: scale(0.96); box-shadow: 0 0 12px var(--primary-glow); }
 }
 
 .orbit-ring {
@@ -797,24 +802,24 @@ onUnmounted(() => {
 }
 
 .ring-1 {
-  width: 68px;
-  height: 68px;
+  width: 50px;
+  height: 50px;
   border-top-color: var(--primary);
   border-left-color: var(--primary);
   animation: rotate-ring 3s linear infinite;
 }
 
 .ring-2 {
-  width: 82px;
-  height: 82px;
+  width: 62px;
+  height: 62px;
   border-right-color: #a855f7;
   border-bottom-color: #a855f7;
   animation: rotate-ring-rev 2.2s linear infinite;
 }
 
 .ring-3 {
-  width: 98px;
-  height: 98px;
+  width: 74px;
+  height: 74px;
   border-top-color: #38bdf8;
   border-bottom-color: #38bdf8;
   animation: rotate-ring 4.5s linear infinite;
@@ -833,8 +838,8 @@ onUnmounted(() => {
 
 .sonar-wave {
   position: absolute;
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1.5px solid var(--primary);
   pointer-events: none;
@@ -847,7 +852,7 @@ onUnmounted(() => {
 
 @keyframes sonar-ripple {
   0% { transform: scale(0.9); opacity: 0.8; }
-  100% { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.0); opacity: 0; }
 }
 
 /* Status Tracker & Steps */
@@ -856,28 +861,28 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 0.5rem;
-  max-width: 440px;
+  gap: 0.35rem;
+  max-width: 380px;
   width: 100%;
 }
 
 .status-stage-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.72rem;
+  gap: 0.35rem;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--primary);
   background: rgba(225, 29, 72, 0.1);
-  padding: 0.2rem 0.65rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 9999px;
   border: 1px solid rgba(225, 29, 72, 0.25);
 }
 
 .pulse-spark {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--primary);
   box-shadow: 0 0 6px var(--primary);
@@ -885,28 +890,28 @@ onUnmounted(() => {
 }
 
 .current-step-title {
-  font-size: 1.1rem;
+  font-size: 0.96rem;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.01em;
 }
 
 .current-step-desc {
-  font-size: 0.825rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 /* Glowing Cyber Progress Bar */
 .cyber-progress-track {
   width: 100%;
-  height: 6px;
+  height: 4px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
   border-radius: 9999px;
   overflow: hidden;
   position: relative;
-  margin-top: 0.6rem;
+  margin-top: 0.4rem;
 }
 
 .cyber-progress-fill {
@@ -936,14 +941,14 @@ onUnmounted(() => {
 .wireframe-mockup-wrapper {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 380px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.65rem;
   overflow: hidden;
 }
 

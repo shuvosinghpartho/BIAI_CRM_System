@@ -383,72 +383,72 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1.25rem;
-  padding: 2.5rem 3rem;
+  gap: 0.85rem;
+  padding: 1.4rem 1.65rem;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg), 0 0 40px var(--primary-glow);
-  max-width: 440px;
-  width: 90%;
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.4), 0 0 24px var(--primary-glow);
+  max-width: 290px;
+  width: 88%;
 }
 
 .splash-logo-container {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .splash-logo-orb {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.6rem;
-  box-shadow: 0 0 25px var(--primary-glow);
+  font-size: 1.15rem;
+  box-shadow: 0 0 16px var(--primary-glow);
   z-index: 2;
 }
 
 .splash-pulse-ring {
   position: absolute;
-  border-radius: 22px;
-  border: 2px solid var(--primary);
+  border-radius: 14px;
+  border: 1.5px solid var(--primary);
   pointer-events: none;
-  animation: splashRipple 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+  animation: splashRipple 1.8s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
 }
 
 .ring-1 {
-  width: 72px;
-  height: 72px;
+  width: 44px;
+  height: 44px;
 }
 
 .ring-2 {
-  width: 88px;
-  height: 88px;
-  animation-delay: 1s;
+  width: 54px;
+  height: 54px;
+  animation-delay: 0.9s;
 }
 
 @keyframes splashRipple {
   0% { transform: scale(0.9); opacity: 0.8; }
-  100% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
 }
 
 .splash-branding {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
 .splash-title {
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.02em;
@@ -456,27 +456,29 @@ onMounted(async () => {
 
 .splash-tag {
   color: var(--primary);
-  font-size: 0.85rem;
+  font-size: 0.65rem;
+  font-weight: 800;
   background: var(--primary-light);
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-sm);
-  margin-left: 0.4rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  margin-left: 0.35rem;
 }
 
 .splash-subtitle {
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
 .splash-progress-track {
   width: 100%;
-  height: 5px;
+  height: 3px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
   border-radius: 9999px;
   overflow: hidden;
   position: relative;
+  margin-top: 0.2rem;
 }
 
 .splash-progress-fill {
@@ -511,18 +513,18 @@ onMounted(async () => {
 .splash-status-text {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 0.78rem;
-  font-weight: 700;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
 .splash-pulse-dot {
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--primary);
-  box-shadow: 0 0 8px var(--primary);
+  box-shadow: 0 0 6px var(--primary);
   animation: pulse-dot-anim 1.5s infinite;
 }
 
