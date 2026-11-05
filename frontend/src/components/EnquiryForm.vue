@@ -139,6 +139,7 @@ watch(() => props.initialData, (newVal) => {
 }, { deep: true })
 
 function handleSubmit() {
+  if (props.saving) return
   emit('save', { ...form })
 }
 </script>

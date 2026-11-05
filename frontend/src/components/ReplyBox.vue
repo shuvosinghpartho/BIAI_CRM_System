@@ -88,7 +88,7 @@ watch(editableReply, (val) => {
 })
 
 async function copyReply() {
-  if (!editableReply.value) return
+  if (isCopied.value || !editableReply.value) return
   try {
     await navigator.clipboard.writeText(editableReply.value)
     isCopied.value = true

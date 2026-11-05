@@ -79,8 +79,8 @@
       <div class="card-quick-actions" @click.stop>
         <!-- WhatsApp Direct -->
         <a
-          v-if="cleanPhone"
-          :href="`https://wa.me/${cleanPhone}`"
+          v-if="whatsAppUrl"
+          :href="whatsAppUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="card-action-btn wa-btn"
@@ -93,8 +93,8 @@
 
         <!-- Phone Call -->
         <a
-          v-if="enquiry.phone"
-          :href="`tel:${enquiry.phone}`"
+          v-if="telUrl"
+          :href="telUrl"
           class="card-action-btn call-btn"
           title="Direct Phone Call"
         >
@@ -136,7 +136,7 @@ import { computed } from 'vue'
 import { useEnquiriesStore } from '../stores/enquiries'
 import StatusSelect from './StatusSelect.vue'
 import OverdueBadge from './OverdueBadge.vue'
-import { formatTimeAgo } from '../utils/format'
+import { formatTimeAgo, formatWhatsAppUrl, formatTelUrl } from '../utils/format'
 
 const props = defineProps({
   enquiry: {
@@ -148,15 +148,11 @@ const props = defineProps({
 const store = useEnquiriesStore()
 const overdue = computed(() => store.isOverdue(props.enquiry))
 
-const cleanPhone = computed(() => {
-  if (!props.enquiry?.phone) return ''
-  const digits = props.enquiry.phone.replace(/\D/g, '')
-  if (digits.startsWith('880')) return digits
-  if (digits.startsWith('01')) return '88' + digits
-  return digits
-})
+const whatsAppUrl = computed(() => formatWhatsAppUrl(props.enquiry?.phone))
+const telUrl = computed(() => formatTelUrl(props.enquiry?.phone))
 
 async function handleStatusChange(newStatus) {
+  if (props.enquiry.status === newStatus) return
   await store.updateStatus(props.enquiry.id, newStatus)
 }
 

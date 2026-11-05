@@ -50,3 +50,27 @@ export function getInterestBadgeClass(interest) {
   return map[interest?.toLowerCase()] || 'badge-unknown'
 }
 
+/**
+ * Builds a valid WhatsApp click-to-chat URL or returns null if the phone is invalid.
+ * Handles Bangla/local BD numbers (01XXXXXXXXX) and international formats (+880, etc.)
+ */
+export function formatWhatsAppUrl(phone) {
+  if (!phone || typeof phone !== 'string') return null
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length < 8 || digits.length > 15) return null
+  if (digits.startsWith('880')) return `https://wa.me/${digits}`
+  if (digits.startsWith('01') && digits.length === 11) return `https://wa.me/88${digits}`
+  return `https://wa.me/${digits}`
+}
+
+/**
+ * Builds a valid tel: protocol link for direct phone dialing or returns null.
+ */
+export function formatTelUrl(phone) {
+  if (!phone || typeof phone !== 'string') return null
+  const cleaned = phone.trim().replace(/[^\d+]/g, '')
+  if (cleaned.length < 5) return null
+  return `tel:${cleaned}`
+}
+
+

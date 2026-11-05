@@ -406,7 +406,7 @@ const formattedSummary = computed(() => {
 })
 
 function copyFullReport() {
-  if (!rawSummaryText.value) return
+  if (isReportCopied.value || !rawSummaryText.value) return
   navigator.clipboard.writeText(rawSummaryText.value)
   isReportCopied.value = true
   store.showToast('Full AI Intelligence report copied to clipboard!', 'success')
@@ -416,6 +416,7 @@ function copyFullReport() {
 }
 
 async function fetchSummary(force = false) {
+  if (loadingSummary.value) return
   loadingSummary.value = true
   startStepTimer()
   try {
@@ -438,7 +439,6 @@ async function fetchSummary(force = false) {
 async function handleStatusChange(id, newStatus) {
   try {
     await store.updateStatus(id, newStatus)
-    store.showToast(`Updated status to "${newStatus}"`, 'success')
   } catch (err) {
     store.showToast('Status update failed: ' + err.message, 'error')
   }

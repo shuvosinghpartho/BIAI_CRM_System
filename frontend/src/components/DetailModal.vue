@@ -43,22 +43,24 @@
         <!-- Quick Action Bar (WhatsApp, Call, Mark Contacted) -->
         <div class="quick-action-bar">
           <a
-            v-if="cleanPhone"
-            :href="`https://wa.me/88${cleanPhone}`"
+            v-if="whatsAppUrl"
+            :href="whatsAppUrl"
             target="_blank"
             rel="noopener noreferrer"
             class="action-btn wa-btn"
+            title="Open WhatsApp chat"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.477-.15-.678.15-.2.301-.778.98-.954 1.18-.176.2-.352.226-.653.076-.301-.15-1.272-.469-2.423-1.496-.896-.799-1.501-1.786-1.677-2.087-.176-.301-.019-.464.132-.614.136-.135.301-.352.452-.528.15-.176.2-.301.301-.502.101-.201.05-.377-.025-.528-.075-.15-.678-1.634-.929-2.237-.245-.588-.493-.508-.678-.517-.176-.009-.377-.009-.578-.009s-.528.075-.804.377c-.276.301-1.055 1.03-1.055 2.512s1.08 2.914 1.231 3.115c.15.201 2.125 3.245 5.148 4.551.719.311 1.281.497 1.719.636.723.23 1.381.197 1.901.12.58-.087 1.78-.727 2.031-1.43.251-.703.251-1.306.176-1.43-.075-.125-.276-.201-.577-.351zM12.04 2C6.516 2 2.028 6.488 2.028 12.012c0 1.94.556 3.754 1.517 5.29L2 22l4.823-1.495c1.488.887 3.224 1.395 5.08 1.395 5.524 0 10.012-4.488 10.012-10.012S17.564 2 12.04 2z"/>
             </svg>
             <span>WhatsApp Lead</span>
           </a>
 
           <a
-            v-if="cleanPhone"
-            :href="`tel:${cleanPhone}`"
+            v-if="telUrl"
+            :href="telUrl"
             class="action-btn call-btn"
+            title="Call Lead"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -69,13 +71,15 @@
           <button
             v-if="isOverdue || enquiry.status === 'New'"
             type="button"
+            :disabled="updatingStatus"
             class="action-btn contact-btn"
             @click="markAsContacted"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <div v-if="updatingStatus" class="spinner-sm"></div>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            <span>Mark Contacted</span>
+            <span>{{ updatingStatus ? 'Updating...' : 'Mark Contacted' }}</span>
           </button>
         </div>
 
@@ -113,8 +117,14 @@
             </div>
           </div>
           <div class="edit-actions">
-            <button type="button" class="btn-save-inline" @click="saveEdits">
-              Save Lead Details
+            <button
+              type="button"
+              :disabled="savingEdits"
+              class="btn-save-inline"
+              @click="saveEdits"
+            >
+              <div v-if="savingEdits" class="spinner-sm"></div>
+              <span>{{ savingEdits ? 'Saving...' : 'Save Lead Details' }}</span>
             </button>
           </div>
         </div>
@@ -127,6 +137,7 @@
               v-for="s in ['New', 'Contacted', 'Interested', 'Paid', 'Lost']"
               :key="s"
               type="button"
+              :disabled="updatingStatus"
               class="stage-btn"
               :class="{ active: enquiry.status === s, [s.toLowerCase()]: true }"
               @click="changeStatus(s)"
@@ -204,12 +215,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useEnquiriesStore } from '../stores/enquiries'
 import OverdueBadge from './OverdueBadge.vue'
 import ReplyBox from './ReplyBox.vue'
 import api from '../api/client'
-import { formatDate, getChannelBadgeClass, getInterestBadgeClass } from '../utils/format'
+import { formatDate, getChannelBadgeClass, getInterestBadgeClass, formatWhatsAppUrl, formatTelUrl } from '../utils/format'
 
 const props = defineProps({
   enquiry: {
@@ -223,6 +234,8 @@ const store = useEnquiriesStore()
 
 const replyText = ref(props.enquiry?.ai_reply || '')
 const generatingReply = ref(false)
+const updatingStatus = ref(false)
+const savingEdits = ref(false)
 const isEditing = ref(false)
 
 const editForm = reactive({
@@ -246,26 +259,32 @@ watch(() => props.enquiry, (newVal) => {
 
 const isOverdue = computed(() => props.enquiry ? store.isOverdue(props.enquiry) : false)
 
-const cleanPhone = computed(() => {
-  if (!props.enquiry?.phone) return ''
-  return props.enquiry.phone.replace(/\D/g, '')
-})
+const whatsAppUrl = computed(() => formatWhatsAppUrl(props.enquiry?.phone))
+const telUrl = computed(() => formatTelUrl(props.enquiry?.phone))
 
 async function changeStatus(newStatus) {
-  if (props.enquiry) {
+  if (!props.enquiry || updatingStatus.value) return
+  updatingStatus.value = true
+  try {
     await store.updateStatus(props.enquiry.id, newStatus)
+  } finally {
+    updatingStatus.value = false
   }
 }
 
 async function markAsContacted() {
-  if (props.enquiry) {
+  if (!props.enquiry || updatingStatus.value) return
+  updatingStatus.value = true
+  try {
     await store.updateStatus(props.enquiry.id, 'Contacted')
-    store.showToast('Marked as contacted! Overdue alert resolved.', 'success')
+  } finally {
+    updatingStatus.value = false
   }
 }
 
 async function saveEdits() {
-  if (!props.enquiry) return
+  if (!props.enquiry || savingEdits.value) return
+  savingEdits.value = true
   try {
     const res = await api.updateEnquiry(props.enquiry.id, {
       name: editForm.name.trim() || null,
@@ -282,11 +301,13 @@ async function saveEdits() {
     store.showToast('Lead details updated successfully!', 'success')
   } catch (err) {
     store.showToast('Failed to update lead: ' + err.message, 'error')
+  } finally {
+    savingEdits.value = false
   }
 }
 
 async function regenerateReply() {
-  if (!props.enquiry) return
+  if (!props.enquiry || generatingReply.value) return
   generatingReply.value = true
   try {
     const res = await api.suggestReply({
@@ -309,7 +330,14 @@ async function regenerateReply() {
 }
 
 function handleBackdropClick(e) {
+  if (updatingStatus.value || savingEdits.value) return
   if (e.target === e.currentTarget) {
+    emit('close')
+  }
+}
+
+function onKeydown(e) {
+  if (e.key === 'Escape' && !updatingStatus.value && !savingEdits.value) {
     emit('close')
   }
 }
@@ -322,9 +350,14 @@ async function confirmDelete() {
 }
 
 onMounted(async () => {
+  window.addEventListener('keydown', onKeydown)
   if (props.enquiry && !replyText.value) {
     regenerateReply()
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
 })
 </script>
 

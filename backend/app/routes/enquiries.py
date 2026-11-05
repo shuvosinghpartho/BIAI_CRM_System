@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -17,6 +17,38 @@ def create_enquiry(payload: EnquiryCreate, db: Session = Depends(get_db)):
     if "created_at" in data and data["created_at"] is None:
         data.pop("created_at")
     
+    # Clean whitespace
+    if "message" in data and isinstance(data["message"], str):
+        data["message"] = data["message"].strip()
+    if "name" in data and isinstance(data["name"], str):
+        data["name"] = data["name"].strip() or None
+    if "phone" in data and isinstance(data["phone"], str):
+        data["phone"] = data["phone"].strip() or None
+
+    # Validate non-empty content
+    if not data.get("message") and not data.get("name") and not data.get("phone"):
+        raise HTTPException(
+            status_code=422,
+            detail="Enquiry message or prospect contact details cannot be empty or whitespace."
+        )
+
+    if not data.get("message"):
+        data["message"] = f"Direct enquiry for {data.get('name') or data.get('phone') or 'Prospect'}"
+
+    # Anti-Spam / Idempotency Guard:
+    # If identical enquiry (same message, phone, source) was received in the last 4 seconds,
+    # return the already created enquiry instead of creating duplicate database rows from rapid button clicks.
+    recent_threshold = datetime.utcnow() - timedelta(seconds=4)
+    existing = db.query(Enquiry).filter(
+        Enquiry.message == data["message"],
+        Enquiry.phone == data.get("phone"),
+        Enquiry.source == data.get("source"),
+        Enquiry.created_at >= recent_threshold
+    ).order_by(desc(Enquiry.created_at)).first()
+
+    if existing:
+        return existing
+
     enquiry = Enquiry(**data)
     db.add(enquiry)
     db.commit()
@@ -62,6 +94,11 @@ def update_enquiry(enquiry_id: int, payload: EnquiryUpdate, db: Session = Depend
         raise HTTPException(status_code=404, detail="Enquiry not found")
 
     update_data = payload.model_dump(exclude_unset=True)
+
+    # Clean whitespace on string fields
+    for k in ["name", "phone", "message"]:
+        if k in update_data and isinstance(update_data[k], str):
+            update_data[k] = update_data[k].strip() or None
 
     # Rule: set last_contacted_at when status changes unless explicitly specified
     if "status" in update_data and update_data["status"] != enquiry.status:

@@ -87,6 +87,16 @@ export const useEnquiriesStore = defineStore('enquiries', {
     },
 
     showToast(message, type = 'success') {
+      if (!message) return
+      // Prevent duplicate identical toasts from button spamming
+      const existing = this.toasts.find(t => t.message === message)
+      if (existing) {
+        return
+      }
+      // Keep maximum 3 toasts on screen
+      if (this.toasts.length >= 3) {
+        this.toasts.shift()
+      }
       const id = Date.now() + Math.random()
       this.toasts.push({ id, message, type })
       setTimeout(() => {
@@ -125,6 +135,11 @@ export const useEnquiriesStore = defineStore('enquiries', {
     },
 
     async updateStatus(id, newStatus) {
+      const target = this.enquiries.find(e => e.id === id)
+      if (target && target.status === newStatus) {
+        return target
+      }
+
       try {
         const res = await api.updateEnquiry(id, { status: newStatus })
         const idx = this.enquiries.findIndex(e => e.id === id)

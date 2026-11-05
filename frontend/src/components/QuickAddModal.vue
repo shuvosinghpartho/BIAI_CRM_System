@@ -212,13 +212,14 @@ const canSave = computed(() => {
 })
 
 function handleBackdropClick(e) {
+  if (saving.value) return
   if (e.target === e.currentTarget) {
     emit('close')
   }
 }
 
 function onKeydown(e) {
-  if (e.key === 'Escape') {
+  if (e.key === 'Escape' && !saving.value) {
     emit('close')
   }
 }
@@ -232,6 +233,7 @@ onUnmounted(() => {
 })
 
 async function handleAnalyze() {
+  if (analyzing.value) return
   if (!rawMessage.value.trim()) return
   analyzing.value = true
   generatingReply.value = true
@@ -239,18 +241,18 @@ async function handleAnalyze() {
   try {
     const [extractSettled, replySettled] = await Promise.allSettled([
       api.extract({
-        message: rawMessage.value,
+        message: rawMessage.value.trim(),
         source: form.source
       }),
       api.suggestReply({
-        message: rawMessage.value
+        message: rawMessage.value.trim()
       })
     ])
 
     if (extractSettled.status === 'fulfilled' && extractSettled.value?.data) {
       const data = extractSettled.value.data
-      if (data.name) form.name = data.name
-      if (data.phone) form.phone = data.phone
+      if (data.name) form.name = data.name.trim()
+      if (data.phone) form.phone = data.phone.trim()
       if (data.source) form.source = data.source
       if (data.interest) form.interest = data.interest
       if (data.enquiry_type) form.enquiry_type = data.enquiry_type
@@ -273,16 +275,19 @@ async function handleAnalyze() {
 }
 
 function copyReply() {
-  if (!suggestedReply.value) return
+  if (copied.value || !suggestedReply.value) return
   navigator.clipboard.writeText(suggestedReply.value)
   copied.value = true
   setTimeout(() => { copied.value = false }, 2000)
 }
 
 async function handleSave() {
-  const msg = rawMessage.value.trim() || `Direct enquiry for ${form.name.trim() || form.phone.trim() || 'Prospect'}`
-  
-  if (!rawMessage.value.trim() && !form.name.trim() && !form.phone.trim()) {
+  if (saving.value) return
+  const cleanMsg = rawMessage.value.trim()
+  const cleanName = form.name.trim()
+  const cleanPhone = form.phone.trim()
+
+  if (!cleanMsg && !cleanName && !cleanPhone) {
     store.showToast('Please enter an enquiry message or prospect name/phone', 'error')
     return
   }
@@ -290,15 +295,15 @@ async function handleSave() {
   saving.value = true
   try {
     const payload = {
-      name: form.name.trim() || null,
-      phone: form.phone.trim() || null,
+      name: cleanName || null,
+      phone: cleanPhone || null,
       source: form.source,
       interest: form.interest,
       enquiry_type: form.enquiry_type,
       status: form.status,
       language: form.language,
-      message: msg,
-      ai_reply: suggestedReply.value || null
+      message: cleanMsg || `Direct enquiry for ${cleanName || cleanPhone || 'Prospect'}`,
+      ai_reply: suggestedReply.value ? suggestedReply.value.trim() : null
     }
 
     await store.addEnquiry(payload)

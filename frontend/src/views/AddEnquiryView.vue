@@ -128,6 +128,7 @@ const extractedData = ref({
 })
 
 async function handleExtract() {
+  if (extracting.value) return
   if (!rawMessage.value.trim()) return
   extracting.value = true
   generatingReply.value = true
@@ -174,6 +175,7 @@ async function handleExtract() {
 }
 
 async function handleSave(formData) {
+  if (saving.value) return
   saving.value = true
   try {
     const payload = {
