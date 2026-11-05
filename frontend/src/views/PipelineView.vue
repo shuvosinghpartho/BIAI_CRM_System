@@ -44,7 +44,7 @@
         <button
           type="button"
           class="btn-primary"
-          @click="showQuickAddModal = true"
+          @click="openQuickAddModal('New')"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/>
@@ -103,6 +103,7 @@
           :status="status"
           :enquiries="store.pipelineColumns[status] || []"
           :loading="store.loading"
+          @add="openQuickAddModal"
         />
       </template>
     </div>
@@ -117,6 +118,7 @@
     <!-- Quick Add Single-Window Modal -->
     <QuickAddModal
       v-if="showQuickAddModal"
+      :initial-status="selectedColumnStatus"
       @close="showQuickAddModal = false"
       @saved="store.fetchAll"
     />
@@ -133,7 +135,13 @@ import QuickAddModal from '../components/QuickAddModal.vue'
 
 const store = useEnquiriesStore()
 const showQuickAddModal = ref(false)
+const selectedColumnStatus = ref('New')
 const activeMobileTab = ref('all')
+
+function openQuickAddModal(status = 'New') {
+  selectedColumnStatus.value = typeof status === 'string' ? status : 'New'
+  showQuickAddModal.value = true
+}
 
 const columns = ['New', 'Contacted', 'Interested', 'Paid', 'Lost']
 

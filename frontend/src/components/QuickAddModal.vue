@@ -159,7 +159,7 @@
         <button type="button" class="btn-cancel" @click="$emit('close')">Cancel</button>
         <button
           type="button"
-          :disabled="saving || !rawMessage.trim()"
+          :disabled="!canSave"
           class="btn-save"
           @click="handleSave"
         >
@@ -172,9 +172,16 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useEnquiriesStore } from '../stores/enquiries'
 import api from '../api/client'
+
+const props = defineProps({
+  initialStatus: {
+    type: String,
+    default: 'New'
+  }
+})
 
 const emit = defineEmits(['close', 'saved'])
 const store = useEnquiriesStore()
@@ -192,8 +199,16 @@ const form = reactive({
   source: 'whatsapp',
   interest: 'unknown',
   enquiry_type: 'sales',
-  status: 'New',
+  status: props.initialStatus || 'New',
   language: 'banglish'
+})
+
+const canSave = computed(() => {
+  return !saving.value && (
+    rawMessage.value.trim().length > 0 ||
+    form.name.trim().length > 0 ||
+    form.phone.trim().length > 0
+  )
 })
 
 function handleBackdropClick(e) {
@@ -202,14 +217,27 @@ function handleBackdropClick(e) {
   }
 }
 
+function onKeydown(e) {
+  if (e.key === 'Escape') {
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+})
+
 async function handleAnalyze() {
   if (!rawMessage.value.trim()) return
   analyzing.value = true
   generatingReply.value = true
 
   try {
-    // Call extract and reply in parallel for maximum speed
-    const [extractRes, replyRes] = await Promise.all([
+    const [extractSettled, replySettled] = await Promise.allSettled([
       api.extract({
         message: rawMessage.value,
         source: form.source
@@ -219,20 +247,22 @@ async function handleAnalyze() {
       })
     ])
 
-    if (extractRes && extractRes.data) {
-      form.name = extractRes.data.name || ''
-      form.phone = extractRes.data.phone || ''
-      form.source = extractRes.data.source || form.source
-      form.interest = extractRes.data.interest || 'unknown'
-      form.enquiry_type = extractRes.data.enquiry_type || 'sales'
-      form.language = extractRes.data.language || 'banglish'
+    if (extractSettled.status === 'fulfilled' && extractSettled.value?.data) {
+      const data = extractSettled.value.data
+      if (data.name) form.name = data.name
+      if (data.phone) form.phone = data.phone
+      if (data.source) form.source = data.source
+      if (data.interest) form.interest = data.interest
+      if (data.enquiry_type) form.enquiry_type = data.enquiry_type
+      if (data.language) form.language = data.language
+      store.showToast('Fields auto-filled from message!', 'success')
+    } else {
+      store.showToast('Message analyzed with rules.', 'info')
     }
 
-    if (replyRes && replyRes.data) {
-      suggestedReply.value = replyRes.data.reply
+    if (replySettled.status === 'fulfilled' && replySettled.value?.data) {
+      suggestedReply.value = replySettled.value.data.reply
     }
-
-    store.showToast('Fields auto-filled from message!', 'success')
   } catch (err) {
     console.error("AI analysis error:", err)
     store.showToast('Processed using rules.', 'info')
@@ -250,8 +280,10 @@ function copyReply() {
 }
 
 async function handleSave() {
-  if (!rawMessage.value.trim()) {
-    store.showToast('Please enter an enquiry message', 'error')
+  const msg = rawMessage.value.trim() || `Direct enquiry for ${form.name.trim() || form.phone.trim() || 'Prospect'}`
+  
+  if (!rawMessage.value.trim() && !form.name.trim() && !form.phone.trim()) {
+    store.showToast('Please enter an enquiry message or prospect name/phone', 'error')
     return
   }
 
@@ -265,7 +297,7 @@ async function handleSave() {
       enquiry_type: form.enquiry_type,
       status: form.status,
       language: form.language,
-      message: rawMessage.value.trim(),
+      message: msg,
       ai_reply: suggestedReply.value || null
     }
 
@@ -273,7 +305,7 @@ async function handleSave() {
     emit('saved')
     emit('close')
   } catch (err) {
-    store.showToast('Save failed: ' + err.message, 'error')
+    store.showToast('Save failed: ' + (err.message || 'Unknown error'), 'error')
   } finally {
     saving.value = false
   }
@@ -281,6 +313,42 @@ async function handleSave() {
 </script>
 
 <style scoped>
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--modal-overlay);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-dialog {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  animation: scaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95) translateY(8px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
 .quick-add-dialog {
   max-width: 640px;
   width: 95%;

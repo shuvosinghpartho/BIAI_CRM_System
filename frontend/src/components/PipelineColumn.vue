@@ -7,6 +7,17 @@
       </div>
       <div class="header-badges">
         <span class="count-badge">{{ enquiries.length }}</span>
+        <button
+          type="button"
+          class="btn-column-add"
+          :title="`Add new lead to ${status}`"
+          @click.stop="$emit('add', status)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -72,7 +83,38 @@ defineProps({
     default: false
   }
 })
+
+defineEmits(['add'])
 </script>
+
+<style scoped>
+.header-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-column-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.btn-column-add:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  transform: scale(1.08);
+}
 
 <style scoped>
 .pipeline-column {
