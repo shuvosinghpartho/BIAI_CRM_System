@@ -135,16 +135,10 @@ async function handleExtract() {
   saveSuccess.value = false
 
   try {
-    // Run extract and reply concurrently in parallel to cut wait time in half
-    const [extractRes, replyRes] = await Promise.all([
-      api.extract({
-        message: rawMessage.value,
-        source: incomingSource.value
-      }),
-      api.suggestReply({
-        message: rawMessage.value
-      })
-    ])
+    const extractRes = await api.extract({
+      message: rawMessage.value,
+      source: incomingSource.value
+    })
 
     if (extractRes && extractRes.data) {
       extractedData.value = {
@@ -153,10 +147,19 @@ async function handleExtract() {
         source: extractRes.data.source || incomingSource.value,
         interest: extractRes.data.interest || 'unknown',
         enquiry_type: extractRes.data.enquiry_type || 'sales',
-        language: extractRes.data.language || 'banglish',
+        language: extractRes.data.language || 'bangla',
         message: rawMessage.value
       }
     }
+
+    // Pass extracted metadata (especially language & track) to suggestReply
+    const replyRes = await api.suggestReply({
+      message: rawMessage.value,
+      name: extractedData.value.name,
+      interest: extractedData.value.interest,
+      enquiry_type: extractedData.value.enquiry_type,
+      language: extractedData.value.language
+    })
 
     if (replyRes && replyRes.data) {
       suggestedReply.value = replyRes.data.reply

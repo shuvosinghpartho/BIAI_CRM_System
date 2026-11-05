@@ -36,7 +36,7 @@ echo "⚡ Starting FastAPI Backend on port 8000..."
 python3 -c "
 import subprocess, sys
 p = subprocess.Popen(
-    [sys.argv[1], 'app.main:app', '--app-dir', sys.argv[2], '--host', '127.0.0.1', '--port', '8000'],
+    [sys.argv[1], 'app.main:app', '--app-dir', sys.argv[2], '--host', '127.0.0.1', '--port', '8000', '--reload'],
     stdout=open('$DIR/backend.log', 'w'),
     stderr=subprocess.STDOUT,
     start_new_session=True

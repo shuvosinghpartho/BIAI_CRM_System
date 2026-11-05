@@ -3,24 +3,30 @@
     <div class="form-grid">
       <!-- Name -->
       <div class="form-group">
-        <label for="name">Sender Name</label>
+        <div class="label-row">
+          <label for="name">Sender Name</label>
+          <span v-if="!form.name" class="hint-tag">Not in message (optional)</span>
+        </div>
         <input
           id="name"
           v-model="form.name"
           type="text"
-          placeholder="e.g. Rafi Ahmed"
+          placeholder="e.g. Rafi Ahmed (or leave for Anonymous)"
           class="form-control"
         />
       </div>
 
       <!-- Phone -->
       <div class="form-group">
-        <label for="phone">Phone Number (01XXXXXXXXX)</label>
+        <div class="label-row">
+          <label for="phone">Phone Number (01XXXXXXXXX)</label>
+          <span v-if="!form.phone" class="hint-tag">Not in message (AI will request)</span>
+        </div>
         <input
           id="phone"
           v-model="form.phone"
           type="text"
-          placeholder="e.g. 01711000001"
+          placeholder="e.g. 01711000001 (or requested via reply)"
           class="form-control font-mono"
         />
       </div>
@@ -40,7 +46,7 @@
       <div class="form-group">
         <label for="interest">Program Interest</label>
         <select id="interest" v-model="form.interest" class="form-control">
-          <option value="bootcamp">Bootcamp (3-day)</option>
+          <option value="bootcamp">Bootcamp (Short / 3-day / Masterclass)</option>
           <option value="fellowship">Fellowship (6-month)</option>
           <option value="corporate">Corporate Training</option>
           <option value="unknown">Unknown / General</option>
@@ -161,6 +167,23 @@ function handleSubmit() {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hint-tag {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  background: var(--bg-surface-elevated);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-color);
 }
 
 .form-group.full-width {

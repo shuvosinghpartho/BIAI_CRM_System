@@ -43,7 +43,7 @@ def test_language_detection():
 
 def test_reply_language_mapping():
     assert get_reply_language("english") == "english"
-    assert get_reply_language("bangla") == "banglish"
+    assert get_reply_language("bangla") == "bangla"
     assert get_reply_language("banglish") == "banglish"
 
 def test_all_20_samples_rules():

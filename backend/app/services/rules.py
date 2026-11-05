@@ -54,12 +54,16 @@ def extract_interest(text: str) -> str:
         return "corporate"
 
     # Fellowship indicators
-    fellowship_terms = ["fellowship", "ফেলোশিপ"]
+    fellowship_terms = ["fellowship", "ফেলোশিপ", "cohort", "কোহর্ট", "6 month", "6-month", "৬ মাস", "ছয় মাস"]
     if any(term in t_lower for term in fellowship_terms):
         return "fellowship"
 
-    # Bootcamp indicators
-    bootcamp_terms = ["bootcamp", "বুটক্যাম্প", "3 day", "3-day"]
+    # Bootcamp indicators (Includes Masterclass, Workshops, Crash courses)
+    bootcamp_terms = [
+        "bootcamp", "বুটক্যাম্প", "3 day", "3-day", "৩ দিন", "৩ দিনের",
+        "masterclass", "মাস্টারক্লাস", "মাস্টার ক্লাস", "workshop", "ওয়ার্কশপ", "ওয়ার্কশপ",
+        "webinar", "ওয়েবিনার", "ওয়েবিনার", "ফ্রি ক্লাস", "free class", "crash course"
+    ]
     if any(term in t_lower for term in bootcamp_terms):
         return "bootcamp"
 
@@ -106,20 +110,51 @@ def extract_enquiry_type(text: str) -> str:
 
 def extract_name_from_text(text: str) -> Optional[str]:
     """
-    Attempts to extract sender name if mentioned in text e.g. "আমার নাম ফারজানা রহমান".
+    Attempts to extract sender name if mentioned in text e.g. "আমার নাম ফারজানা রহমান", "ami Tanvir", "I am Rafi".
     """
     if not text:
         return None
     
-    # Bangla name pattern: "আমার নাম [Name]"
-    m_bn = re.search(r"আমার\s+নাম\s+([^\s।,.?!]+(?:\s+[^\s।,.?!]+)?)", text)
+    # 1. Bangla name patterns: "আমার নাম [Name]", "নাম: [Name]"
+    m_bn = re.search(r"(?:আমার\s+নাম[:ঃ\s]+|নাম[:ঃ\s]+)([^\s।,.?!0-9]+(?:\s+[^\s।,.?!0-9]+)?)", text)
     if m_bn:
-        return m_bn.group(1).strip()
+        candidate = m_bn.group(1).strip()
+        if len(candidate) > 1 and candidate not in ["কি", "হলো", "আছে"]:
+            return candidate
+
+    # Bangla "আমি [Name]" (guarding against common verbs/nouns like "আমি কি", "আমি ক্লাস")
+    m_bn_ami = re.search(r"\bআমি\s+([^\s।,.?!0-9]+(?:\s+[^\s।,.?!0-9]+)?)", text)
+    if m_bn_ami:
+        candidate = m_bn_ami.group(1).strip()
+        stop_words = {"কি", "চাই", "ক্লাস", "একটি", "কোর্স", "পারব", "পড়ি", "পড়ি", "বলছি", "হতে", "করতে", "একজন"}
+        first_word = candidate.split()[0] if candidate.split() else ""
+        if first_word not in stop_words and len(candidate) > 2:
+            return candidate
     
-    # English name pattern: "My name is [Name]" or "I am [Name]"
+    # 2. Banglish name patterns: "amar naam [Name]", "amar nam [Name]", "name: [Name]"
+    m_bg = re.search(r"(?:amar\s+na?am[:\s]+|name[:\s]+|this\s+is\s+)([A-Za-z]+(?:\s+[A-Za-z]+)?)", text, re.IGNORECASE)
+    if m_bg:
+        candidate = m_bg.group(1).strip()
+        if len(candidate) > 1 and candidate.lower() not in ["ki", "hobe", "chai"]:
+            return candidate
+
+    # Banglish "ami [Name]"
+    m_bg_ami = re.search(r"\bami\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)\b", text, re.IGNORECASE)
+    if m_bg_ami:
+        candidate = m_bg_ami.group(1).strip()
+        stop_words_bg = {"ki", "chai", "class", "course", "parbo", "bolte", "korbo", "hote", "korte", "student"}
+        first_word = candidate.lower().split()[0] if candidate.split() else ""
+        if first_word not in stop_words_bg and len(candidate) > 2:
+            return candidate
+
+    # 3. English name patterns: "My name is [Name]" or "I am [Name]"
     m_en = re.search(r"(?:my name is|i am)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)", text, re.IGNORECASE)
     if m_en:
-        return m_en.group(1).strip()
+        candidate = m_en.group(1).strip()
+        stop_words_en = {"a", "an", "the", "looking", "interested", "writing", "student", "working"}
+        first_word = candidate.lower().split()[0] if candidate.split() else ""
+        if first_word not in stop_words_en and len(candidate) > 2:
+            return candidate
 
     return None
 

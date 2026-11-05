@@ -39,9 +39,13 @@ def detect_language(text: str) -> str:
 
 def get_reply_language(detected_lang: str) -> str:
     """
-    Rule: English if sender wrote English, Banglish if Bangla or Banglish.
+    Language matching rule:
+    - If sender wrote in Bangla -> reply in "bangla" (বাংলা লিপি)
+    - If sender wrote in Banglish -> reply in "banglish" (Latin script)
+    - If sender wrote in English -> reply in "english"
     """
-    if detected_lang == "english":
-        return "english"
-    return "banglish"
+    if detected_lang in ["bangla", "banglish", "english"]:
+        return detected_lang
+    return "bangla" if detected_lang == "bangla" else "banglish"
+
 

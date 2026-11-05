@@ -85,7 +85,7 @@
           <div class="form-group">
             <label class="field-label">Program Track</label>
             <select v-model="form.interest" class="form-select">
-              <option value="bootcamp">Bootcamp (Short / 3-day)</option>
+              <option value="bootcamp">Bootcamp (Short / 3-day / Masterclass)</option>
               <option value="fellowship">Fellowship (6-month / Cohort)</option>
               <option value="corporate">Corporate Training (B2B)</option>
               <option value="unknown">General / Unknown</option>
@@ -133,7 +133,7 @@
               </svg>
               <span class="reply-title">AI Suggested Reply</span>
               <span v-if="form.language" class="badge-lang">
-                Matches: {{ form.language === 'english' ? 'English' : 'Banglish' }}
+                Matches: {{ form.language === 'english' ? 'English' : (form.language === 'bangla' ? 'বাংলা (Bangla)' : 'Banglish') }}
               </span>
             </div>
             <button
@@ -239,18 +239,13 @@ async function handleAnalyze() {
   generatingReply.value = true
 
   try {
-    const [extractSettled, replySettled] = await Promise.allSettled([
-      api.extract({
-        message: rawMessage.value.trim(),
-        source: form.source
-      }),
-      api.suggestReply({
-        message: rawMessage.value.trim()
-      })
-    ])
+    const extractRes = await api.extract({
+      message: rawMessage.value.trim(),
+      source: form.source
+    })
 
-    if (extractSettled.status === 'fulfilled' && extractSettled.value?.data) {
-      const data = extractSettled.value.data
+    if (extractRes?.data) {
+      const data = extractRes.data
       if (data.name) form.name = data.name.trim()
       if (data.phone) form.phone = data.phone.trim()
       if (data.source) form.source = data.source
@@ -262,8 +257,16 @@ async function handleAnalyze() {
       store.showToast('Message analyzed with rules.', 'info')
     }
 
-    if (replySettled.status === 'fulfilled' && replySettled.value?.data) {
-      suggestedReply.value = replySettled.value.data.reply
+    const replyRes = await api.suggestReply({
+      message: rawMessage.value.trim(),
+      name: form.name,
+      interest: form.interest,
+      enquiry_type: form.enquiry_type,
+      language: form.language
+    })
+
+    if (replyRes?.data) {
+      suggestedReply.value = replyRes.data.reply
     }
   } catch (err) {
     console.error("AI analysis error:", err)

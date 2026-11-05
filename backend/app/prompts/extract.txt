@@ -13,16 +13,16 @@ Output schema:
 }
 
 Extraction Rules:
-1. "name": Extract the sender's real name if explicitly stated in the message (e.g. "আমার নাম ফারজানা রহমান" -> "Farzana Rahman" or "ফারজানা রহমান"). Otherwise null.
+1. "name": Extract the sender's real name if explicitly stated in the message (e.g. "আমার নাম ফারজানা রহমান", "ami Tanvir", "I am Rafi"). If no personal name is provided, return null. DO NOT invent or guess a name.
 2. "phone": Normalize Bangladeshi phone numbers to 01XXXXXXXXX (11 digits, starting with 013-019). Convert any Bangla digits (০-৯) to English digits. If no phone in text, return null.
 3. "source": Infer if obvious or provided in context, otherwise default to "website" or null.
 4. "interest":
-   - "bootcamp": 3-day bootcamp, crash course, short training.
-   - "fellowship": 6-month or long fellowship program, advanced cohort.
+   - "bootcamp": 3-day bootcamp, crash course, short training, masterclass, workshop, webinar, free class (e.g. "মাস্টারক্লাস", "masterclass", "workshop", "বুটক্যাম্প", "ফ্রি ক্লাস").
+   - "fellowship": 6-month or long fellowship program, advanced cohort (e.g. "ফেলোশিপ", "fellowship", "cohort").
    - "corporate": B2B, company training, employee training, bank, team upskilling.
-   - "unknown": general questions, certificates, masterclasses, discounts without specified program, or non-sales.
+   - "unknown": general questions without any specified course/program, or non-sales.
 5. "enquiry_type":
-   - "sales": interested in courses, pricing, discounts, eligibility, syllabus, class format, certificates.
+   - "sales": interested in courses, masterclasses, pricing, discounts, eligibility, syllabus, class format, certificates.
    - "support": existing customer issues (e.g. payment made but no confirmation, refund request for existing enrollment, cancellation).
    - "spam": promotional spam, crypto scams, unrelated links.
    - "job_seeker": asking for job openings, internship applications, sending CV to work at BIAI.
