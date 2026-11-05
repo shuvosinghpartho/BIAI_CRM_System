@@ -194,6 +194,9 @@ async function handleSave(formData) {
 <style scoped>
 .add-enquiry-view {
   padding: 1.5rem 1.75rem;
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .page-container {

@@ -460,6 +460,9 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .summary-header {

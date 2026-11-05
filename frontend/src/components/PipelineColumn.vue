@@ -116,18 +116,19 @@ defineEmits(['add'])
   transform: scale(1.08);
 }
 
-<style scoped>
 .pipeline-column {
-  flex: 1;
-  min-width: 290px;
-  max-width: 350px;
+  flex: 1 1 0%;
+  min-width: 270px;
+  max-width: 340px;
+  height: 100%;
+  min-height: 0;
   background-color: var(--column-bg);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 170px);
   border: 1px solid var(--border-color);
   box-shadow: var(--card-shadow);
+  overflow: hidden;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -136,7 +137,7 @@ defineEmits(['add'])
 }
 
 .column-header {
-  padding: 0.95rem 1.15rem;
+  padding: 0.85rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -144,6 +145,7 @@ defineEmits(['add'])
   background: var(--bg-surface);
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
+  flex-shrink: 0;
 }
 
 .col-title-group {
@@ -165,7 +167,7 @@ defineEmits(['add'])
 .col-lost .status-indicator { background-color: var(--status-lost); }
 
 .status-title {
-  font-size: 0.95rem;
+  font-size: 0.925rem;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.01em;
@@ -174,20 +176,37 @@ defineEmits(['add'])
 .count-badge {
   background-color: var(--bg-surface-elevated);
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.725rem;
   font-weight: 800;
-  padding: 0.15rem 0.55rem;
+  padding: 0.12rem 0.5rem;
   border-radius: 9999px;
   border: 1px solid var(--border-color);
 }
 
 .cards-container {
-  padding: 0.9rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.65rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  min-height: 0;
+}
+
+/* Custom Sleek Scrollbar */
+.cards-container::-webkit-scrollbar {
+  width: 4px;
+}
+.cards-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cards-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+.cards-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
 
 .cards-transition-wrap {
