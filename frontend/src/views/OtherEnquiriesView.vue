@@ -212,7 +212,7 @@ onMounted(() => {
 }
 
 .tab-btn {
-  padding: 0.35rem 0.85rem;
+  padding: 0.38rem 0.9rem;
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
   font-weight: 700;
@@ -220,25 +220,42 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  transition: all 0.15s;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
 }
 
 .tab-btn:hover {
   color: var(--text-main);
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .tab-btn.active {
-  background: var(--bg-surface);
-  color: var(--text-main);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff !important;
+  border-color: #ef4444;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4), 0 0 0 1px rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
 }
 
 .tab-count {
   font-size: 0.7rem;
   background: var(--bg-surface-elevated);
-  padding: 0.1rem 0.45rem;
+  padding: 0.12rem 0.5rem;
   border-radius: 9999px;
   border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.tab-btn.active .tab-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  font-weight: 800;
 }
 
 .cards-grid {
